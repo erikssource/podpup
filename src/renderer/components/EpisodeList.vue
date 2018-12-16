@@ -5,7 +5,7 @@
          :items="episodes"
          striped >
          <template slot="details" slot-scope="data">
-            <b-button size="sm" v-on:click.stop="data.toggleDetails" >
+            <b-button size="sm" v-on:click="data.toggleDetails" >
                <i class="fas fa-file-alt"></i>
             </b-button>
          </template>

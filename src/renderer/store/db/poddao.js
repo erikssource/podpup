@@ -2,8 +2,13 @@ import Vue from 'vue'
 import Sequelize from 'sequelize'
 import * as Promise from 'bluebird'
 import path from 'path'
+import fs from 'fs'
 
 import config from '../modules/config'
+
+if (!fs.existsSync(config.state.poddir)) {
+   fs.mkdirSync(config.state.poddir, {recursive: true})
+}
 
 const sequelize = new Sequelize('poddb', null, null, {
    dialect: 'sqlite',
