@@ -57,6 +57,7 @@
             isplaying: false,
             duration: 0,
             progress: 0,
+            soundid: 0,
             updateTimer: null
          }
       },
@@ -72,11 +73,11 @@
          playpause: function(event) {
             if (this.$data.playstate === 'Play') {
                this.$data.playstate = 'Pause'
-               this.$data.audioplayer.play()
+               this.$data.soundid = this.$data.audioplayer.play(this.$data.soundid)
             }
             else {
                this.$data.playstate = 'Play'
-               this.$data.audioplayer.pause()
+               this.$data.audioplayer.pause(this.$data.soundid)
             }
          },
          formatDuration: function(durationInSecs) {
@@ -93,7 +94,7 @@
             if (this.$data.audioplayer) {
                let seekpoint = Math.round(((Math.max(this.$data.progress,1))/2000) * this.$data.duration)
                console.log("Setting Seekpoint: ", seekpoint)
-               this.$data.audioplayer.seek(seekpoint)
+               this.$data.audioplayer.seek(seekpoint, this.$data.soundid)
                this.$data.updateTimer = setInterval(() => {
                   this.$data.progress = calcProgress(this.$data.audioplayer.seek(), this.$data.duration)
                }, 500)
@@ -102,6 +103,9 @@
       },
       watch: {
          playingEpisode: function(newEpisode, oldEpisode) {
+            if (oldEpisode && newEpisode.id === oldEpisode.id) {
+               return;
+            }
             // Make sure I'm hooked up to the media key
             mediakeys.registerPlaypauseHandler((() => {
                this.playpause(null)
@@ -129,10 +133,10 @@
                src: [src],
                preload: true,
                html5: true,
-               volume: 0.7
+               volume: 0.9
             })
             this.$data.duration = newEpisode.duration
-            this.$data.audioplayer.play()
+            this.$data.soundid = this.$data.audioplayer.play()
             this.$data.isplaying = true
             this.$data.playstate = 'Pause'
             this.$data.progress = calcProgress(this.$data.audioplayer.seek(), this.$data.duration)
