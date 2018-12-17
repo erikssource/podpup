@@ -29,6 +29,10 @@ function createWindow () {
 
   mainWindow.loadURL(winURL)
 
+  if (process.platform === "linux") {
+    require("./linux/dbusMediaKeys")
+  }
+
   mainWindow.on('closed', () => {
     mainWindow = null
   })
@@ -51,6 +55,7 @@ function createWindow () {
         {
           label: 'About',
           click() {
+            mainWindow.webContents.send('ping')
             dialog.showMessageBox({
               type: 'info',
               center: true,
@@ -65,7 +70,7 @@ function createWindow () {
   Menu.setApplicationMenu(menu)
 
   let registered = globalShortcut.register('mediaplaypause', function() {
-    mediakeys.handlePlaypause()
+    console.log("Media PlayPaused Called")
   })
 
   if (registered) {

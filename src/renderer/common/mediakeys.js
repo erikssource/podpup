@@ -5,6 +5,7 @@ var mediaKeyManager = {
 
 export default {
    handlePlaypause() {
+      console.info("handlePlaypause Called", mediaKeyManager)
       if (mediaKeyManager.playpauseCallback) {
          mediaKeyManager.playpauseCallback()
       }

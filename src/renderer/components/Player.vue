@@ -61,6 +61,11 @@
             updateTimer: null
          }
       },
+      mounted() {
+         this.$electron.ipcRenderer.on('ping', (event) => {
+            console.log("PING!")
+         })
+      },
       computed: {
          playingEpisode() {
             return this.$store.state.podcasts.play_episode
