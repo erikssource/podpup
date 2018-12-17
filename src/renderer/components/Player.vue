@@ -32,7 +32,6 @@
    import vueSlider from 'vue-slider-component'
 
    import utils from '../common/utils'
-   import mediakeys from '../common/mediakeys'
 
    var calcProgress = function(value, total) {
       return value === 0
@@ -62,8 +61,8 @@
          }
       },
       mounted() {
-         this.$electron.ipcRenderer.on('ping', (event) => {
-            console.log("PING!")
+         this.$electron.ipcRenderer.on('mkplay', (event) => {
+            this.playpause(null)
          })
       },
       computed: {
@@ -76,13 +75,15 @@
       },
       methods: {
          playpause: function(event) {
-            if (this.$data.playstate === 'Play') {
-               this.$data.playstate = 'Pause'
-               this.$data.soundid = this.$data.audioplayer.play(this.$data.soundid)
-            }
-            else {
-               this.$data.playstate = 'Play'
-               this.$data.audioplayer.pause(this.$data.soundid)
+            if (this.$data.isplaying) {
+               if (this.$data.playstate === 'Play') {
+                  this.$data.playstate = 'Pause'
+                  this.$data.soundid = this.$data.audioplayer.play(this.$data.soundid)
+               }
+               else {
+                  this.$data.playstate = 'Play'
+                  this.$data.audioplayer.pause(this.$data.soundid)
+               }
             }
          },
          formatDuration: function(durationInSecs) {
@@ -111,10 +112,6 @@
             if (oldEpisode && newEpisode.id === oldEpisode.id) {
                return;
             }
-            // Make sure I'm hooked up to the media key
-            mediakeys.registerPlaypauseHandler((() => {
-               this.playpause(null)
-            }).bind(this))
             this.$data.progress = 0
             if (this.$data.updateTimer) {
                clearInterval(this.$data.updateTimer)

@@ -1,5 +1,5 @@
 import { app, dialog, BrowserWindow, Menu, globalShortcut } from 'electron'
-import mediakeys from '../renderer/common/mediakeys'
+import dbusMediaKeys from './linux/dbusMediaKeys'
 
 /**
  * Set `__static` path to static files in production
@@ -30,7 +30,7 @@ function createWindow () {
   mainWindow.loadURL(winURL)
 
   if (process.platform === "linux") {
-    require("./linux/dbusMediaKeys")
+    dbusMediaKeys.linuxMediaKeys(mainWindow)
   }
 
   mainWindow.on('closed', () => {
@@ -55,7 +55,6 @@ function createWindow () {
         {
           label: 'About',
           click() {
-            mainWindow.webContents.send('ping')
             dialog.showMessageBox({
               type: 'info',
               center: true,
@@ -70,7 +69,8 @@ function createWindow () {
   Menu.setApplicationMenu(menu)
 
   let registered = globalShortcut.register('mediaplaypause', function() {
-    console.log("Media PlayPaused Called")
+    console.info("Media PlayPaused Pressed")
+    mainWindow.webContents.send('mkplay')
   })
 
   if (registered) {
