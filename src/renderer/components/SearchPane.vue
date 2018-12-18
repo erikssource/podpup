@@ -53,14 +53,9 @@
          },
          subscribe(searchresult) {
             this.$store.dispatch('podAdded', searchresult.url)
-            let index = -1
-            for ( let i = 0; i < searchresults.length; i++ ) {
-               if (searchresults[i].id === searchresult.id) {
-                  index = i
-               }
-            }
+            let index = this.$data.searchresults.indexOf(searchresult)
             if (index >= 0) {
-               searchresults.slice(index, 1);
+               this.$data.searchresults.splice(index, 1);
             }
          },
          searchForFeeds() {

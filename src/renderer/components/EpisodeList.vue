@@ -11,7 +11,7 @@
          </template>
          <template slot="title" slot-scope="data">
             <div>{{ data.item.title }}</div>
-            <div v-if="data.item.id === downloading"><b-progress :value="progress" :max="100"></b-progress></div>
+            <div v-if="downloading.includes(data.item.id)"><b-progress :value="progress[data.item.id]" :max="100"></b-progress></div>
          </template>
          <template slot="published" slot-scope="data">
             {{ formatDate(data.item.published) }}
@@ -21,7 +21,7 @@
          </template>
          <template slot="action" slot-scope="data">
             <button type="button" class="btn btn-success btn-sm" v-on:click="playepisode(data.item)"><i class="fas fa-play"></i></button>
-            <button v-if="data.item.filename" type="button" class="btn btn-danger btn-sm"><i class="fas fa-file-excel"></i></button>
+            <button v-if="data.item.filename" type="button" class="btn btn-danger btn-sm" @click="deleteDownload(data.item)"><i class="fas fa-file-excel"></i></button>
             <button v-else type="button" class="btn btn-primary btn-sm" v-on:click="download(data.item)"><i class="fas fa-download"></i></button>
          </template>
 
@@ -49,27 +49,33 @@
                { key: 'duration', label: 'Duration'},
                { key: 'action', label: 'Actions'}
             ],
-            downloading: -1,
-            progress: 0
+            downloading: [],
+            progress: []
          }
       },
       computed: {
          episodes() {
            return this.$store.state.podcasts.current_episodes
-         }
+         }         
       },
       methods: {
          download(episode) {
-            this.$data.downloading = episode.id
+            this.$data.downloading.push(episode.id)
+            this.$data.progress[episode.id] = 0
             this.$store.dispatch('downloadEpisode', {
                episode: episode, 
                progress: function(progress) {
-                  this.$data.progress = progress
-                  console.log("Progress: ", progress)
+                  // Need to splice in the new value for Vue to detect change.
+                  this.$data.progress.splice(episode.id, 1, progress)
                }.bind(this),
                complete: function() {
-                  this.$data.downloading = -1
-                  this.$data.progress = 0
+                  this.$data.downloading.splice(this.$data.downloading.indexOf(episode.id), 1)
+                  // If nothing is downloading, clear out all progress values. Splicing out
+                  // progress elements on completion seems to do some wonky things when
+                  // there are other progress bars.
+                  if (this.$data.downloading.length === 0) {
+                     this.$data.progress = []
+                  }
                }.bind(this)
             })
          },
@@ -84,6 +90,9 @@
          },
          renderHtml(value) {
             return this.$sanitize(value)
+         },
+         deleteDownload(episode) {
+            this.$store.dispatch('deleteDownload', episode)
          }
       }
    }

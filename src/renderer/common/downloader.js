@@ -37,5 +37,10 @@ export default {
          fs.mkdirSync(pathName, {recursive: true})
       }
       return pathName
+   },
+   deleteDownload(filename) {
+      if (fs.existsSync(filename)) {
+         fs.unlinkSync(filename)
+      }
    }
 }
