@@ -39,14 +39,26 @@ One of the goals of podpup is to keep things simple. When the application starts
 There is a lot of work ahead. The goal is to create a podcast fetcher and player that works the way you want it work. That means the ability have per feed settings for how often to check for new episodes, when to download episodes, how to name the downloads, how long downloads should be kept, and how many episodes should be shown. Sometimes you want to download every episode, but may for a news-related podcast you only want to download the last two and throw away anything older. That's the idea, though there is a lot of refinement and features to make things better in general.
 
 The next few feature goals are:
-* Get podpup working with media keys (might already work on Windows, haven't tried it)
-* Bookmarking (podcasts will resume at the same spot you stopped listening)
-* Searching for feeds using iTunes
+* ~~Get podpup working with media keys (might already work on Windows, haven't tried it)~~
+* ~~Bookmarking (podcasts will resume at the same spot you stopped listening)~~
+* ~~Searching for feeds using iTunes~~
 * More error handling
-* Support for background tasks
+* Icons to show episodes that have been bookmarked or downloaded
+* Support for background jobs.
+* Limit concurrent downloads.
 * Fixed position for player in UI (don't let it scroll offscreen)
 * Add setting for feed checking interval
 * Add setting for downloading strategy
+* Better UI feedback
+* Allow canceling of downloads
+* Allow limiting number of episodes shown
+* Allow hiding episodes
+* Allow detached episodes (no longer in feed, but downloaded)
+* Indicator to show a podcast has new content
+* Better looking UI
+* Queue podcasts to play
+* Dark theme
+...and more
 
 ---
 
