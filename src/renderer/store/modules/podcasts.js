@@ -46,7 +46,6 @@ const actions = {
       commit('setPlayingEpisode', episode)
    },
    updateBookmark({commit}, payload) {
-      console.log("UPDATE BOOKMARK: ", payload)
       commit('updateEpisodeBookmark', {episode: payload.episode, bookmark: payload.position})
    },
    downloadEpisode({commit, state}, payload) {
