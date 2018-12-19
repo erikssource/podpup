@@ -9,7 +9,6 @@ import utils from './utils'
 
 export default {
    downloadEpisode(feed, episode, progressCallback, completeCallback) {
-      console.log("PROGRESS CALLBACK 2: ", progressCallback)
       let fileName = path.format({
          dir: this.getFeedPath(feed),
          name: filenamify(episode.title),
@@ -18,7 +17,6 @@ export default {
 
       progress(request(episode.url))
          .on('progress', (state) => {
-            console.log('progress', state.percent)
             progressCallback(Math.round(100 * state.percent))
          })
          .on('error', (err) => {
