@@ -8,6 +8,9 @@ A loyal podcast fetcher
 # install dependencies
 npm install
 
+# rebuild sqlite3
+./node_modules/.bin/electron-rebuild -w sqlite3
+
 # serve with hot reload at localhost:9080
 npm run dev
 
