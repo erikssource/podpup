@@ -6,9 +6,10 @@
                v-for="podcast in podcasts" 
                class="d-flex justify-content-between align-items-center"
                :key="podcast.id"
+               @click="selectPodcast(podcast)"
                v-bind:active="selectedPodcastId === podcast.id">
-                  <span @click="selectPodcast(podcast)">{{ podcast.title }}</span>
-                  <b-button size="sm" variant="outline-success" @click="refreshPodcast(podcast)"><i class="fas fa-sync"></i></b-button>      
+                  <span>{{ podcast.title }}</span>
+                  <b-button size="sm" variant="success" @click.stop="refreshPodcast(podcast)"><i class="fas fa-sync"></i></b-button>      
             </b-list-group-item>
          </b-list-group>
       </b-card>

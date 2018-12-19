@@ -45,12 +45,20 @@ const actions = {
    playEpisode ({commit}, episode) {
       commit('setPlayingEpisode', episode)
    },
+   updateBookmark({commit}, payload) {
+      console.log("UPDATE BOOKMARK: ", payload)
+      commit('updateEpisodeBookmark', {episode: payload.episode, bookmark: payload.position})
+   },
    downloadEpisode({commit, state}, payload) {
       downloader.downloadEpisode(state.current_pod, payload.episode, payload.progress, (fileName) => {
          payload.progress(100)
          commit('updateEpisodeFile', { episode: payload.episode, filename: fileName} )
          payload.complete()
       })
+   },
+   deleteDownload({commit}, episode) {
+      downloader.deleteDownload(episode.filename);
+      commit('updateEpisodeFile', { episode: episode, filename: null} )
    }
 }
 
@@ -66,6 +74,19 @@ const mutations = {
    },
    setEpisodes(state, episodes) {
       state.current_episodes = episodes
+   },
+   //TODO: Consolidate episode updates
+   //TODO: Use array like a hash instead of this
+   updateEpisodeBookmark(state, payload) {
+      if (state.current_episodes) {
+         state.current_episodes.forEach((ep) => {
+            if (payload.episode.id === ep.id) {               
+               ep.bookmark = payload.bookmark
+               poddao.updateEpisode(ep.id, {bookmark: payload.bookmark})
+               return
+            }
+         })
+      }
    },
    updateEpisodeFile(state, payload) {
       if (state.current_episodes) {

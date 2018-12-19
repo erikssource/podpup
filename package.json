@@ -1,10 +1,14 @@
 {
   "name": "podpup",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "Erik Larson <erik@welarson.com>",
   "description": "An electron-vue project",
   "license": "GPL-3.0",
   "main": "./dist/electron/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erikssource/podpup"
+  },
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
@@ -57,6 +61,7 @@
     "filenamify": "^2.1.0",
     "howler": "^2.1.0",
     "install": "^0.12.2",
+    "itunes-podcasts": "^1.0.1",
     "jquery": "^3.3.1",
     "node-podcast-parser": "^2.3.0",
     "printf": "^0.5.1",
@@ -112,5 +117,8 @@
     "webpack-dev-server": "^3.1.4",
     "webpack-hot-middleware": "^2.22.2",
     "webpack-merge": "^4.1.5"
+  },
+  "optionalDependencies": {
+    "dbus-native": "^0.4.0"
   }
 }

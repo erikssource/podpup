@@ -16,7 +16,8 @@
                </p>
                <div v-if="playingEpisode" >
                   <vue-slider ref="slider" v-bind:tooltip="false" v-model="progress" @drag-start="dragStart" @drag-end="dragEnd" :min="0" :max="2000" ></vue-slider>
-                  <span>{{ formatDuration(calculatedSeek) }}</span>
+                  <span v-if="dragging">{{ formatDuration(calculatedSeek)}}</span>
+                  <span v-else>{{ formatDuration(seek) }}</span>
                </div>
             </div>
          </div>
@@ -32,7 +33,6 @@
    import vueSlider from 'vue-slider-component'
 
    import utils from '../common/utils'
-   import mediakeys from '../common/mediakeys'
 
    var calcProgress = function(value, total) {
       return value === 0
@@ -58,8 +58,15 @@
             duration: 0,
             progress: 0,
             soundid: 0,
+            seek: 0,
+            dragging: false,
             updateTimer: null
          }
+      },
+      mounted() {
+         this.$electron.ipcRenderer.on('mkplay', (event) => {
+            this.playpause(null)
+         })
       },
       computed: {
          playingEpisode() {
@@ -71,13 +78,15 @@
       },
       methods: {
          playpause: function(event) {
-            if (this.$data.playstate === 'Play') {
-               this.$data.playstate = 'Pause'
-               this.$data.soundid = this.$data.audioplayer.play(this.$data.soundid)
-            }
-            else {
-               this.$data.playstate = 'Play'
-               this.$data.audioplayer.pause(this.$data.soundid)
+            if (this.$data.isplaying) {
+               if (this.$data.playstate === 'Play') {
+                  this.$data.playstate = 'Pause'
+                  this.$data.soundid = this.$data.audioplayer.play(this.$data.soundid)
+               }
+               else {
+                  this.$data.playstate = 'Play'
+                  this.$data.audioplayer.pause(this.$data.soundid)
+               }
             }
          },
          formatDuration: function(durationInSecs) {
@@ -85,6 +94,7 @@
          },
          dragStart: function() {
             if (this.$data.audioplayer) {
+               this.$data.dragging = true
                console.log("Clearing Interval")
                clearInterval(this.$data.updateTimer)
                this.$data.updateTimer = null
@@ -92,11 +102,15 @@
          },
          dragEnd: function() {
             if (this.$data.audioplayer) {
+               this.$data.dragging = false
                let seekpoint = Math.round(((Math.max(this.$data.progress,1))/2000) * this.$data.duration)
                console.log("Setting Seekpoint: ", seekpoint)
                this.$data.audioplayer.seek(seekpoint, this.$data.soundid)
+               this.$data.seek = seekpoint
                this.$data.updateTimer = setInterval(() => {
-                  this.$data.progress = calcProgress(this.$data.audioplayer.seek(), this.$data.duration)
+                  this.$data.seek = this.$data.audioplayer.seek()
+                  this.$data.progress = calcProgress(this.$data.seek, this.$data.duration)
+                  this.$store.dispatch('updateBookmark', { episode: this.$store.state.podcasts.play_episode, position: this.$data.seek})
                }, 500)
             }
          }
@@ -106,10 +120,6 @@
             if (oldEpisode && newEpisode.id === oldEpisode.id) {
                return;
             }
-            // Make sure I'm hooked up to the media key
-            mediakeys.registerPlaypauseHandler((() => {
-               this.playpause(null)
-            }).bind(this))
             this.$data.progress = 0
             if (this.$data.updateTimer) {
                clearInterval(this.$data.updateTimer)
@@ -135,13 +145,25 @@
                html5: true,
                volume: 0.9
             })
+
+            let seekpoint = newEpisode.bookmark
+            if (seekpoint > (newEpisode.duration - 30)) {
+               seekpoint = 0
+            }
+
             this.$data.duration = newEpisode.duration
             this.$data.soundid = this.$data.audioplayer.play()
+            this.$data.audioplayer.seek(seekpoint, this.$data.soundid)
             this.$data.isplaying = true
             this.$data.playstate = 'Pause'
-            this.$data.progress = calcProgress(this.$data.audioplayer.seek(), this.$data.duration)
+            this.$data.progress = calcProgress(seekpoint, this.$data.duration)
             this.$data.updateTimer = setInterval(() => {
-               this.$data.progress = calcProgress(this.$data.audioplayer.seek(), this.$data.duration)
+               let seekvalue = this.$data.audioplayer.seek()
+               if ((typeof seekvalue) === 'number') {
+                  this.$data.seek = seekvalue
+                  this.$data.progress = calcProgress(this.$data.seek, this.$data.duration)
+                  this.$store.dispatch('updateBookmark', { episode: this.$store.state.podcasts.play_episode, position: this.$data.seek})
+               }
             }, 500)
          }
       }

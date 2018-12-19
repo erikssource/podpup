@@ -12,7 +12,8 @@ if (!fs.existsSync(config.state.poddir)) {
 
 const sequelize = new Sequelize('poddb', null, null, {
    dialect: 'sqlite',
-   storage: path.join(config.state.poddir, 'podpup.db')
+   storage: path.join(config.state.poddir, 'podpup.db'),
+   logging: () => {}
 })
 
 const Feed = sequelize.define('pod', {
@@ -95,6 +96,10 @@ const Episode = sequelize.define('episode', {
       detached: {
          type: Sequelize.BOOLEAN,
          defaultValue: false
+      },
+      bookmark: {
+         type: Sequelize.INTEGER,
+         defaultValue: 0
       },
       settings: {
          type: Sequelize.JSON

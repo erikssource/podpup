@@ -1,5 +1,5 @@
 import { app, dialog, BrowserWindow, Menu, globalShortcut } from 'electron'
-import mediakeys from '../renderer/common/mediakeys'
+import dbusMediaKeys from './linux/dbusMediaKeys'
 
 /**
  * Set `__static` path to static files in production
@@ -28,6 +28,10 @@ function createWindow () {
   })
 
   mainWindow.loadURL(winURL)
+
+  if (process.platform === "linux") {
+    dbusMediaKeys.linuxMediaKeys(mainWindow)
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null
@@ -65,7 +69,8 @@ function createWindow () {
   Menu.setApplicationMenu(menu)
 
   let registered = globalShortcut.register('mediaplaypause', function() {
-    mediakeys.handlePlaypause()
+    console.info("Media PlayPaused Pressed")
+    mainWindow.webContents.send('mkplay')
   })
 
   if (registered) {
