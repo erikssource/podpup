@@ -1,6 +1,6 @@
 {
   "name": "podpup",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "author": "Erik Larson <erik@welarson.com>",
   "description": "An electron-vue project",
   "license": "GPL-3.0",
@@ -51,7 +51,8 @@
       "icon": "build/icons/icon.ico"
     },
     "linux": {
-      "icon": "build/icons"
+      "icon": "build/icons",
+      "category": "AudioVideo"
     }
   },
   "dependencies": {
