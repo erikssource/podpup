@@ -3,7 +3,8 @@
       <b-card no-body header="<strong>Podcasts</strong>">
          <b-list-group flush>
             <b-list-group-item 
-               v-for="podcast in podcasts" 
+               v-for="podcast in podcasts"
+               button
                class="d-flex justify-content-between align-items-center"
                :key="podcast.id"
                @click="selectPodcast(podcast)"

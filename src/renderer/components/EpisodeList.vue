@@ -5,12 +5,16 @@
          :items="episodes"
          striped >
          <template slot="details" slot-scope="data">
-            <b-button size="sm" v-on:click="data.toggleDetails" >
+            <b-button v-b-tooltip.hover title="Show Details" size="sm" v-on:click="data.toggleDetails" >
                <i class="fas fa-file-alt"></i>
             </b-button>
          </template>
          <template slot="title" slot-scope="data">
-            <div>{{ data.item.title }}</div>
+            <div>
+               {{ data.item.title }}
+               <b-badge variant="primary" v-if="data.item.bookmark > 0"><i class="fas fa-bookmark"></i></b-badge>
+               <b-badge variant="primary" v-if="data.item.filename"><i class="fas fa-save"></i></b-badge>
+            </div>
             <div v-if="downloading.includes(data.item.id)"><b-progress :value="progress[data.item.id]" :max="100"></b-progress></div>
          </template>
          <template slot="published" slot-scope="data">
@@ -20,9 +24,9 @@
             {{ formatDuration(data.item.duration) }}
          </template>
          <template slot="action" slot-scope="data">
-            <button type="button" class="btn btn-success btn-sm" v-on:click="playepisode(data.item)"><i class="fas fa-play"></i></button>
-            <button v-if="data.item.filename" type="button" class="btn btn-danger btn-sm" @click="deleteDownload(data.item)"><i class="fas fa-file-excel"></i></button>
-            <button v-else type="button" class="btn btn-primary btn-sm" v-on:click="download(data.item)"><i class="fas fa-download"></i></button>
+            <button type="button" v-b-tooltip.hover title="Play Podcast" class="btn btn-success btn-sm" v-on:click="playepisode(data.item)"><i class="fas fa-play"></i></button>
+            <button v-if="data.item.filename" v-b-tooltip.hover title="Delete Download" type="button" class="btn btn-danger btn-sm" @click="deleteDownload(data.item)"><i class="fas fa-file-excel"></i></button>
+            <button v-else type="button" v-b-tooltip.hover title="Download" class="btn btn-primary btn-sm" v-on:click="download(data.item)"><i class="fas fa-download"></i></button>
          </template>
 
          <template slot="row-details" slot-scope="data">
@@ -98,7 +102,7 @@
    }
 </script>
 
-<style>
+<style scoped>
 .episodes-wrapper {
    height: 800px;
    overflow-x: hidden;
