@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/rdeyj0awt2np3btq?svg=true)](https://ci.appveyor.com/project/erikssource/podpup)
+
 # podpup
 
 A loyal podcast fetcher
