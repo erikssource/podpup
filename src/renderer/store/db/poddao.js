@@ -173,6 +173,12 @@ export default {
          this.addEpisodes(feed, data)
       })
    },
+   removePodcast(pod) {
+      Feed.findByPk(pod.id)
+         .then((feed) => { return this.deleteEpisodes(feed.id) })
+         .then(() => sequelize.query('DELETE FROM pods WHERE id=?', 
+            { replacements: [pod.id], type: sequelize.QueryTypes.DELETE }))
+   },
    addEpisode(feed, ep) {
       return Episode.create({
          pod_id: feed.id,
@@ -196,8 +202,13 @@ export default {
    },
    updateEpisode(id, data) {
       Episode.findByPk(id).then((ep) => {
-         ep.update(data).then(() => {})
-      })
+         return ep.update(data)})
+         .then(() => {})
+   },
+   deleteEpisodes(podId) {
+      return sequelize.query('DELETE FROM episodes WHERE pod_id=?',
+         { replacements: [podId], type: sequelize.QueryTypes.DELETE }
+      )
    },
    getEpisodeGuids(podcast) {
       return Episode.findAll({

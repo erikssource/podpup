@@ -10,7 +10,11 @@
                @click="selectPodcast(podcast)"
                v-bind:active="selectedPodcastId === podcast.id">
                   <span>{{ podcast.title }}</span>
-                  <b-button size="sm" variant="success" @click.stop="refreshPodcast(podcast)"><i class="fas fa-sync"></i></b-button>      
+                  <div>
+                     <moon-loader :size=40 v-if="waiting.includes(podcast.id)"></moon-loader>
+                     <!-- <b-button v-if="waiting.includes(podcast.id)" size="sm" v-b-tooltip.hover titie="Refreshing" variant="secondary"><i class="fas fa-sync"></i></b-button> -->
+                     <b-button v-else size="sm" v-b-tooltip.hover title="Refresh Podcast" variant="success" @click.stop="refreshPodcast(podcast)"><i class="fas fa-sync"></i></b-button>      
+                  </div>
             </b-list-group-item>
          </b-list-group>
       </b-card>
@@ -18,10 +22,17 @@
 </template>
 
 <script>
+   import { MoonLoader } from '@saeris/vue-spinners'
+
    export default {
       name: 'podcast-list',
       data() {
-         return {}
+         return {
+            waiting: []
+         }
+      },
+      components: {
+         MoonLoader
       },
       computed: {
          podcasts() {
@@ -39,7 +50,14 @@
             this.$store.dispatch('podSelected', row)
          },
          refreshPodcast(row) {
-            this.$store.dispatch('updatePodcast', row)
+            this.$data.waiting.push(row.id)
+            this.$store.dispatch('updatePodcast', {
+                  podcast: row,
+                  complete: function() {
+                     console.log('Complete called')
+                     this.$data.waiting.splice(this.$data.waiting.indexOf(row.id), 1)
+                  }.bind(this)
+               })
             return false
          }
       }

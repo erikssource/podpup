@@ -12,8 +12,8 @@
          <template slot="title" slot-scope="data">
             <div>
                {{ data.item.title }}
-               <b-badge variant="primary" v-if="data.item.bookmark > 0"><i class="fas fa-bookmark"></i></b-badge>
-               <b-badge variant="primary" v-if="data.item.filename"><i class="fas fa-save"></i></b-badge>
+               <span class="text-primary" v-if="data.item.bookmark > 0"><i class="fas fa-book"></i></span>
+               <span class="text-primary" v-if="data.item.filename"><i class="fas fa-arrow-alt-circle-down"></i></span>
             </div>
             <div v-if="downloading.includes(data.item.id)"><b-progress :value="progress[data.item.id]" :max="100"></b-progress></div>
          </template>

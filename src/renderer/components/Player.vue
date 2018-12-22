@@ -3,8 +3,9 @@
       <b-card>
          <div class="row">
             <div class="col-2">
-               <div>
-                  <button type="button" class="btn btn-primary" v-bind:disabled="!playingEpisode" v-on:click="playpause">{{ playstate }}</button>
+               <div>                  
+                  <button type="button" class="btn btn-primary" v-if="playingEpisode" v-on:click="playpause"><i class='fas' :class="playstate"></i></button>
+                  <button type="button" class="btn btn-secondary" v-else disabled><i class='fas' :class="playstate"></i></button>
                </div>
                <div v-if="playingEpisode">
                   {{ formatDuration(playingEpisode.duration) }}
@@ -46,6 +47,9 @@
          : Math.round((progress/2000) * total)
    }
 
+   const play = 'fa-play'
+   const pause = 'fa-pause'
+
    export default {
       name: 'player',
       components: {
@@ -53,7 +57,7 @@
       },
       data() {
          return {
-            playstate: 'Play',
+            playstate: play,
             isplaying: false,
             duration: 0,
             progress: 0,
@@ -79,12 +83,12 @@
       methods: {
          playpause: function(event) {
             if (this.$data.isplaying) {
-               if (this.$data.playstate === 'Play') {
-                  this.$data.playstate = 'Pause'
+               if (this.$data.playstate === play) {
+                  this.$data.playstate = pause
                   this.$data.soundid = this.$data.audioplayer.play(this.$data.soundid)
                }
                else {
-                  this.$data.playstate = 'Play'
+                  this.$data.playstate = play
                   this.$data.audioplayer.pause(this.$data.soundid)
                }
             }
@@ -155,7 +159,7 @@
             this.$data.soundid = this.$data.audioplayer.play()
             this.$data.audioplayer.seek(seekpoint, this.$data.soundid)
             this.$data.isplaying = true
-            this.$data.playstate = 'Pause'
+            this.$data.playstate = pause
             this.$data.progress = calcProgress(seekpoint, this.$data.duration)
             this.$data.updateTimer = setInterval(() => {
                let seekvalue = this.$data.audioplayer.seek()

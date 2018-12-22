@@ -20,17 +20,21 @@ const actions = {
          commit('loadPodcasts', pods)
       })
    },
-   updatePodcast({commit, state}, podcast) {
-      casts.updateFeed(podcast)
+   updatePodcast({commit, state}, payload) {
+      casts.updateFeed(payload.podcast)
          .then((pod) => {
             if (state.current_pod && state.current_pod.id == pod.id) {
-               poddao.getAllEpisodes(podcast).then((episodes) => commit('setEpisodes', episodes))
+               poddao.getAllEpisodes(payload.podcast).then((episodes) => {
+                  payload.complete()
+               })
+            }
+            else {
+               payload.complete();
             }
          })
    },
    podAdded ({commit}, url) {
       casts.loadFeed(url, (feed) => {
-         console.log("NEW POD: ", feed)
          commit('addPodcast', feed)
       })
    },
@@ -58,6 +62,18 @@ const actions = {
    deleteDownload({commit}, episode) {
       downloader.deleteDownload(episode.filename);
       commit('updateEpisodeFile', { episode: episode, filename: null} )
+   },
+   removePodcast({commit, state}, podcast) {
+      // Call poddao
+      poddao.removePodcast(podcast)
+      // then
+      poddao.getAllPods().then((pods) => {
+         commit('loadPodcasts', pods)
+      })
+      if (podcast.id === state.current_pod.id) {
+         commit('setCurrentPod', null)
+         commit('setEpisodes', null)
+      }
    }
 }
 
