@@ -27,28 +27,28 @@
 </template>
 
 <script>
-   import path from 'path'
-   import fileUrl from 'file-url'
-   import { remote } from 'electron'
-   import {Howl, Howler} from 'howler'
-   import vueSlider from 'vue-slider-component'
+   import path from 'path';
+   import fileUrl from 'file-url';
+   import { remote } from 'electron';
+   import {Howl, Howler} from 'howler';
+   import vueSlider from 'vue-slider-component';
 
-   import utils from '../common/utils'
+   import utils from '../common/utils';
 
    var calcProgress = function(value, total) {
       return value === 0
          ? 0
-         : Math.round((value/total) * 2000)
+         : Math.round((value/total) * 2000);
    }
 
    var calcSeek = function(progress, total) {
       return progress = 0
          ? 0
-         : Math.round((progress/2000) * total)
+         : Math.round((progress/2000) * total);
    }
 
-   const play = 'fa-play'
-   const pause = 'fa-pause'
+   const play = 'fa-play';
+   const pause = 'fa-pause';
 
    export default {
       name: 'player',
@@ -70,52 +70,52 @@
       mounted() {
          this.$electron.ipcRenderer.on('mkplay', (event) => {
             this.playpause(null)
-         })
+         });
       },
       computed: {
          playingEpisode() {
-            return this.$store.state.podcasts.play_episode
+            return this.$store.state.podcasts.play_episode;
          },
          calculatedSeek() {
-            return calcSeek(this.$data.progress, this.$data.duration)
+            return calcSeek(this.$data.progress, this.$data.duration);
          }
       },
       methods: {
          playpause: function(event) {
             if (this.$data.isplaying) {
                if (this.$data.playstate === play) {
-                  this.$data.playstate = pause
-                  this.$data.soundid = this.$data.audioplayer.play(this.$data.soundid)
+                  this.$data.playstate = pause;
+                  this.$data.soundid = this.$data.audioplayer.play(this.$data.soundid);
                }
                else {
-                  this.$data.playstate = play
-                  this.$data.audioplayer.pause(this.$data.soundid)
+                  this.$data.playstate = play;
+                  this.$data.audioplayer.pause(this.$data.soundid);
                }
             }
          },
          formatDuration: function(durationInSecs) {
-            return utils.formatDuration(durationInSecs)
+            return utils.formatDuration(durationInSecs);
          },
          dragStart: function() {
             if (this.$data.audioplayer) {
-               this.$data.dragging = true
-               console.log("Clearing Interval")
-               clearInterval(this.$data.updateTimer)
-               this.$data.updateTimer = null
+               this.$data.dragging = true;
+               console.log("Clearing Interval");
+               clearInterval(this.$data.updateTimer);
+               this.$data.updateTimer = null;
             }
          },
          dragEnd: function() {
             if (this.$data.audioplayer) {
-               this.$data.dragging = false
-               let seekpoint = Math.round(((Math.max(this.$data.progress,1))/2000) * this.$data.duration)
-               console.log("Setting Seekpoint: ", seekpoint)
-               this.$data.audioplayer.seek(seekpoint, this.$data.soundid)
-               this.$data.seek = seekpoint
+               this.$data.dragging = false;
+               let seekpoint = Math.round(((Math.max(this.$data.progress,1))/2000) * this.$data.duration);
+               console.log("Setting Seekpoint: ", seekpoint);
+               this.$data.audioplayer.seek(seekpoint, this.$data.soundid);
+               this.$data.seek = seekpoint;
                this.$data.updateTimer = setInterval(() => {
-                  this.$data.seek = this.$data.audioplayer.seek()
-                  this.$data.progress = calcProgress(this.$data.seek, this.$data.duration)
-                  this.$store.dispatch('updateBookmark', { episode: this.$store.state.podcasts.play_episode, position: this.$data.seek})
-               }, 500)
+                  this.$data.seek = this.$data.audioplayer.seek();
+                  this.$data.progress = calcProgress(this.$data.seek, this.$data.duration);
+                  this.$store.dispatch('updateBookmark', { episode: this.$store.state.podcasts.play_episode, position: this.$data.seek});
+               }, 500);
             }
          }
       },
@@ -124,24 +124,24 @@
             if (oldEpisode && newEpisode.id === oldEpisode.id) {
                return;
             }
-            this.$data.progress = 0
+            this.$data.progress = 0;
             if (this.$data.updateTimer) {
-               clearInterval(this.$data.updateTimer)
-               this.$data.updateTimer = null
+               clearInterval(this.$data.updateTimer);
+               this.$data.updateTimer = null;
             }
             if (this.$data.audioplayer) {
-               this.$data.audioplayer.unload()
-               this.$data.audioplayer = null
+               this.$data.audioplayer.unload();
+               this.$data.audioplayer = null;
             }
-            let src = ""
+            let src = "";
             if (newEpisode.filename) {
-               src = fileUrl(newEpisode.filename)
+               src = fileUrl(newEpisode.filename);
             }
             else {
-               src = newEpisode.url
+               src = newEpisode.url;
             }
 
-            console.log("PLAYING: ", src)
+            console.log("PLAYING: ", src);
 
             this.$data.audioplayer = new Howl({
                src: [src],
@@ -150,25 +150,25 @@
                volume: 0.9
             })
 
-            let seekpoint = newEpisode.bookmark
+            let seekpoint = newEpisode.bookmark;
             if (seekpoint > (newEpisode.duration - 30)) {
-               seekpoint = 0
+               seekpoint = 0;
             }
 
-            this.$data.duration = newEpisode.duration
-            this.$data.soundid = this.$data.audioplayer.play()
-            this.$data.audioplayer.seek(seekpoint, this.$data.soundid)
-            this.$data.isplaying = true
-            this.$data.playstate = pause
-            this.$data.progress = calcProgress(seekpoint, this.$data.duration)
+            this.$data.duration = newEpisode.duration;
+            this.$data.soundid = this.$data.audioplayer.play();
+            this.$data.audioplayer.seek(seekpoint, this.$data.soundid);
+            this.$data.isplaying = true;
+            this.$data.playstate = pause;
+            this.$data.progress = calcProgress(seekpoint, this.$data.duration);
             this.$data.updateTimer = setInterval(() => {
-               let seekvalue = this.$data.audioplayer.seek()
+               let seekvalue = this.$data.audioplayer.seek();
                if ((typeof seekvalue) === 'number') {
-                  this.$data.seek = seekvalue
-                  this.$data.progress = calcProgress(this.$data.seek, this.$data.duration)
-                  this.$store.dispatch('updateBookmark', { episode: this.$store.state.podcasts.play_episode, position: this.$data.seek})
+                  this.$data.seek = seekvalue;
+                  this.$data.progress = calcProgress(this.$data.seek, this.$data.duration);
+                  this.$store.dispatch('updateBookmark', { episode: this.$store.state.podcasts.play_episode, position: this.$data.seek});
                }
-            }, 500)
+            }, 500);
          }
       }
    }

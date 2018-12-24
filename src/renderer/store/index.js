@@ -1,8 +1,8 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import podcasts from './modules/podcasts'
+import Vue from 'vue';
+import Vuex from 'vuex';
+import podcasts from './modules/podcasts';
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
@@ -12,4 +12,4 @@ export default new Vuex.Store({
     podcasts
   },
   strict: false
-})
+});

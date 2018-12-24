@@ -15,7 +15,7 @@
                <span class="text-primary" v-if="data.item.bookmark > 0"><i class="fas fa-book"></i></span>
                <span class="text-primary" v-if="data.item.filename"><i class="fas fa-arrow-alt-circle-down"></i></span>
             </div>
-            <div v-if="downloading.includes(data.item.id)"><b-progress :value="progress[data.item.id]" :max="100"></b-progress></div>
+            <div v-if="isDownloading(data.item)"><b-progress :value="downloadProgress(data.item)" :max="100"></b-progress></div>
          </template>
          <template slot="published" slot-scope="data">
             {{ formatDate(data.item.published) }}
@@ -52,51 +52,38 @@
                { key: 'published', label: 'Date'},
                { key: 'duration', label: 'Duration'},
                { key: 'action', label: 'Actions'}
-            ],
-            downloading: [],
-            progress: []
+            ]
          }
       },
       computed: {
          episodes() {
-           return this.$store.state.podcasts.current_episodes
+           return this.$store.state.podcasts.current_episodes;
+         },
+         isDownloading(episode) {
+            return (episode) => this.$store.getters.isEpDownloading(episode.id);
+         },
+         downloadProgress(episode) {
+            return (episode) => this.$store.getters.epDownloadProgress(episode.id);
          }         
       },
       methods: {
          download(episode) {
-            this.$data.downloading.push(episode.id)
-            this.$data.progress[episode.id] = 0
-            this.$store.dispatch('downloadEpisode', {
-               episode: episode, 
-               progress: function(progress) {
-                  // Need to splice in the new value for Vue to detect change.
-                  this.$data.progress.splice(episode.id, 1, progress)
-               }.bind(this),
-               complete: function() {
-                  this.$data.downloading.splice(this.$data.downloading.indexOf(episode.id), 1)
-                  // If nothing is downloading, clear out all progress values. Splicing out
-                  // progress elements on completion seems to do some wonky things when
-                  // there are other progress bars.
-                  if (this.$data.downloading.length === 0) {
-                     this.$data.progress = []
-                  }
-               }.bind(this)
-            })
+            this.$store.dispatch('downloadEpisode', episode);
          },
          playepisode(episode) {
-            this.$store.dispatch('playEpisode', episode)
+            this.$store.dispatch('playEpisode', episode);
          },
          formatDuration(durationInSecs) {
-            return utils.formatDuration(durationInSecs)
+            return utils.formatDuration(durationInSecs);
          },
          formatDate(dateString) {
-            return utils.formatDateFromString(dateString)
+            return utils.formatDateFromString(dateString);
          },
          renderHtml(value) {
-            return this.$sanitize(value)
+            return this.$sanitize(value);
          },
          deleteDownload(episode) {
-            this.$store.dispatch('deleteDownload', episode)
+            this.$store.dispatch('deleteDownload', episode);
          }
       }
    }
