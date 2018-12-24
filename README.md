@@ -45,13 +45,14 @@ The next few feature goals are:
 * ~~Bookmarking (podcasts will resume at the same spot you stopped listening)~~
 * ~~Searching for feeds using iTunes~~
 * More error handling
-* Icons to show episodes that have been bookmarked or downloaded
-* Support for background jobs.
-* Limit concurrent downloads.
+* ~~Icons to show episodes that have been bookmarked or downloaded~~
+* ~~Tooltips~~
+* Support for background jobs. (in progress)
+* Limit concurrent downloads. (in progress)
 * Fixed position for player in UI (don't let it scroll offscreen)
 * Add setting for feed checking interval
 * Add setting for downloading strategy
-* Better UI feedback
+* Better UI feedback (in progress)
 * Allow canceling of downloads
 * Allow limiting number of episodes shown
 * Allow hiding episodes
@@ -60,6 +61,11 @@ The next few feature goals are:
 * Better looking UI
 * Queue podcasts to play
 * Dark theme
+* Bug fixes, bug fixes, bug fixes
+* Selection of data directory location
+* Downloaded episode naming options
+* Move search UI to more logical location
+* User guide
 ...and more
 
 ---
