@@ -1,20 +1,30 @@
-import Vue from 'vue'
-import Sequelize from 'sequelize'
-import * as Promise from 'bluebird'
-import path from 'path'
-import fs from 'fs'
+import Vue from 'vue';
+import Sequelize from 'sequelize';
+import Promise from 'bluebird';
+import path from 'path';
+import fs from 'fs';
 
-import config from '../modules/config'
+import config from '../modules/config';
 
 if (!fs.existsSync(config.state.poddir)) {
-   fs.mkdirSync(config.state.poddir, {recursive: true})
+   fs.mkdirSync(config.state.poddir, {recursive: true});
 }
 
 const sequelize = new Sequelize('poddb', null, null, {
    dialect: 'sqlite',
    storage: path.join(config.state.poddir, 'podpup.db'),
    logging: () => {}
-})
+});
+
+const Config = sequelize.define('config', {
+      name: {
+         type: Sequelize.STRING,
+         allowNull: false
+      },
+      settings: {
+         type: Sequelize.JSON
+      }
+});
 
 const Feed = sequelize.define('pod', {
       title: {
@@ -25,7 +35,8 @@ const Feed = sequelize.define('pod', {
          type: Sequelize.STRING
       },
       url: {
-         type: Sequelize.STRING
+         type: Sequelize.STRING,
+         allowNull: false
       },
       lastupdate: {
          type: Sequelize.DATE
@@ -41,6 +52,26 @@ const Feed = sequelize.define('pod', {
       },
       link: {
          type: Sequelize.STRING
+      },
+      maxeps: {
+         type: Sequelize.INTEGER,
+         defaultValue: 150
+      },
+      checktime: {
+         type: Sequelize.INTEGER,
+         defaultValue: 0
+      },
+      autodown: {
+         type: Sequelize.BOOLEAN,
+         defaultValue: false
+      },
+      maxdown: {
+         type: Sequelize.INTEGER,
+         defaultValue: 0
+      },
+      downttl: {
+         type: Sequelize.INTEGER,
+         defaultValue: 0
       },
       ppupdate: {
          type: Sequelize.DATE,
@@ -60,7 +91,7 @@ const Feed = sequelize.define('pod', {
          }
       ]
    }
-)
+);
 
 const Episode = sequelize.define('episode', {
       guid: {
@@ -97,6 +128,18 @@ const Episode = sequelize.define('episode', {
          type: Sequelize.BOOLEAN,
          defaultValue: false
       },
+      hidden: {
+         type: Sequelize.BOOLEAN,
+         defaultValue: false
+      },
+      keeper: {
+         type: Sequelize.BOOLEAN,
+         defaultValue: false
+      },
+      played: {
+         type: Sequelize.BOOLEAN,
+         defaultValue: false
+      },
       bookmark: {
          type: Sequelize.INTEGER,
          defaultValue: 0
@@ -122,10 +165,15 @@ const Episode = sequelize.define('episode', {
          },
          {
             fields: ['pod_id']
+         },
+         {
+            fields: ['guid']
          }
       ]
    }
-)
+);
+
+/* jshint ignore:start */
 
 export default {
    initialize() {
@@ -158,8 +206,16 @@ export default {
          order: [['published', 'DESC']]
       })
    },
-   addPodcast(data, url, cb) {
-      Feed.create({
+   async addPodcastStub(title, lastupdate, url) {
+      let podcast = await Feed.create({
+         title: title,
+         url: url,
+         lastupdate: lastupdate
+      });
+      return podcast;
+   },
+   async addPodcast(data, url) {
+      let podcast = await Feed.create({
          title: data.title,
          author: data.author,
          lastupdate: data.updated,
@@ -168,14 +224,39 @@ export default {
          link: data.link,
          summary: data.description.short,
          description: data.description.long
-      }).then((feed) => {
-         cb(feed)
-         this.addEpisodes(feed, data)
       })
+      await this.addEpisodes(podcast, data)
+      return podcast
    },
-   addEpisode(feed, ep) {
-      return Episode.create({
-         pod_id: feed.id,
+   async loadPodcast(id, data, url) {
+      let podcast = await Feed.findByPk(id)
+      if (podcast === null) {
+         return addPodcast(data, url)
+      }
+      await podcast.update({
+         author: data.author,
+         lastupdate: data.updated,
+         image: data.image,
+         link: data.link,
+         summary: data.description.short,
+         description: data.description.long
+      })
+      await this.addEpisodes(podcast, data)
+      return podcast
+   },
+   async updatePodcast(id, data) {
+      let podcast = await Feed.findByPk(id)
+      return podcast.update(data);
+   },
+   async removePodcast(pod) {
+      let podcast = await Feed.findByPk(pod.id)
+      await this.deleteEpisodes(podcast.id)
+      return sequelize.query('DELETE FROM pods WHERE id=?', 
+            { replacements: [podcast.id], type: sequelize.QueryTypes.DELETE })
+   },
+   async addEpisode(podcast, ep) {
+      let episode = await Episode.create({
+         pod_id: podcast.id,
          guid: ep.guid,
          title: ep.title,
          description: ep.description,
@@ -185,19 +266,21 @@ export default {
          mimetype: ep.enclosure.type,
          url: ep.enclosure.url
       })
+      return episode
    },
-   addEpisodes(feed, data) {
-      let podId = feed.id
-      let tasks = []
+   async addEpisodes(feed, data) {
       data.episodes.forEach((ep) => {
-         tasks.push(this.addEpisode(feed, ep))
+         this.addEpisode(feed, ep)
       })
-      return Promise.all(tasks)
    },
-   updateEpisode(id, data) {
-      Episode.findByPk(id).then((ep) => {
-         ep.update(data).then(() => {})
-      })
+   async updateEpisode(id, data) {
+      let ep = await Episode.findByPk(id)
+      return ep.update(data)
+   },
+   async deleteEpisodes(podId) {
+      return sequelize.query('DELETE FROM episodes WHERE pod_id=?',
+         { replacements: [podId], type: sequelize.QueryTypes.DELETE }
+      )
    },
    getEpisodeGuids(podcast) {
       return Episode.findAll({
@@ -207,3 +290,4 @@ export default {
    }
 }
 
+/* jshint ignore:end */

@@ -1,15 +1,15 @@
-import { app, dialog, BrowserWindow, Menu, globalShortcut } from 'electron'
-import dbusMediaKeys from './linux/dbusMediaKeys'
+import { app, dialog, BrowserWindow, Menu, globalShortcut } from 'electron';
+import dbusMediaKeys from './linux/dbusMediaKeys';
 
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
 if (process.env.NODE_ENV !== 'development') {
-  global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+  global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\');
 }
 
-let mainWindow
+let mainWindow;
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
@@ -25,17 +25,17 @@ function createWindow () {
     webPreferences: {
       webSecurity: (process.env.NODE_ENV === 'development' ? false : true)
     }
-  })
+  });
 
-  mainWindow.loadURL(winURL)
+  mainWindow.loadURL(winURL);
 
   if (process.platform === "linux") {
     dbusMediaKeys.linuxMediaKeys(mainWindow)
   }
 
   mainWindow.on('closed', () => {
-    mainWindow = null
-  })
+    mainWindow = null;
+  });
 
   let menu = Menu.buildFromTemplate([
     {
@@ -44,7 +44,7 @@ function createWindow () {
         {
           label: 'Exit',
           click() {
-            app.quit()
+            app.quit();
           }
         }
       ]
@@ -60,40 +60,40 @@ function createWindow () {
               center: true,
               message: 'PodPup\nVersion: ' + app.getVersion(),
               buttons: ["OK"]
-            })
+            });
           }
         }
       ]
     }
-  ])
-  Menu.setApplicationMenu(menu)
+  ]);
+  Menu.setApplicationMenu(menu);
 
   let registered = globalShortcut.register('mediaplaypause', function() {
-    console.info("Media PlayPaused Pressed")
-    mainWindow.webContents.send('mkplay')
-  })
+    console.info("Media PlayPaused Pressed");
+    mainWindow.webContents.send('mkplay');
+  });
 
   if (registered) {
-    console.log('media play/pause button bound')
+    console.log('media play/pause button bound');
   }
   else {
-    console.error('media play/pause binding failed')
+    console.error('media play/pause binding failed');
   }
 }
 
-app.on('ready', createWindow)
+app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit()
+    app.quit();
   }
-})
+});
 
 app.on('activate', () => {
   if (mainWindow === null) {
-    createWindow()
+    createWindow();
   }
-})
+});
 
 /**
  * Auto Updater

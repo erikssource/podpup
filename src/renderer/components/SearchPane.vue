@@ -27,7 +27,7 @@
                <b-list-group-item v-for="searchresult in searchresults" :key="searchresult.id">
                   <b-media>
                      <b-img slot="aside" width="100" alt="pod image" v-bind:src="searchresult.image" />
-                     <p class="lead">{{ searchresult.name }}</p>
+                     <p class="lead">{{ searchresult.title }}</p>
                      <button type="button" class="btn btn-success" @click="subscribe(searchresult)">Subscribe</button>
                   </b-media>
                </b-list-group-item>
@@ -49,10 +49,14 @@
       },
       methods: {
          addFeed() {
-            this.$store.dispatch('podAdded', this.$data.rssfeed)
+            this.$store.dispatch('feedAdded', this.$data.rssfeed)
          },
          subscribe(searchresult) {
-            this.$store.dispatch('podAdded', searchresult.url)
+            this.$store.dispatch('podAdded', {
+               title: searchresult.title,
+               lastupdate: searchresult.lastupdate,
+               url: searchresult.url
+            })
             let index = this.$data.searchresults.indexOf(searchresult)
             if (index >= 0) {
                this.$data.searchresults.splice(index, 1);
@@ -69,8 +73,9 @@
                   response.results.forEach((result) => {
                      data.push({
                         id: idx,
-                        name: result.collectionName,
+                        title: result.collectionName,
                         image: result.artworkUrl100,
+                        lastupdate: result.releaseDate,
                         url: result.feedUrl
                      })
                      idx++
