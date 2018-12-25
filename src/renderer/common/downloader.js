@@ -6,9 +6,53 @@ import path from 'path';
 
 import config from '../store/modules/config';
 import utils from './utils';
+import { Task } from './task';
+import { ProcessManager } from './process';
+
+let downloadProcessor = new ProcessManager(config.state.concurrentDownloads);
+
+let doDownload = function(payload) {
+   return new Promise((resolve, reject) => {
+      let {fileName, episode, progressCallback} = payload;
+
+      progress(request(episode.url))
+         .on('progress', (state) => {
+            progressCallback(Math.round(100 * state.percent));
+         })
+         .on('error', (err) => {
+            reject(err);
+         })
+         .on('end', () => {
+            resolve(fileName);
+         })
+         .pipe(fs.createWriteStream(fileName));
+   });
+};
 
 export default {
    downloadEpisode(feed, episode, progressCallback, completeCallback) {
+      let fileName = path.format({
+         dir: this.getFeedPath(feed),
+         name: filenamify(episode.title),
+         ext: utils.mimeToExt(episode.mimetype)
+      });
+      let task = new Task(
+         doDownload,
+         {
+            fileName: fileName,
+            episode: episode,
+            progressCallback: progressCallback
+         },
+         (err) => console.error("Download Error: ", err),
+         (result) => {
+            console.log("Download Finished: ", result);
+            completeCallback(result);
+         },
+         () => console.log("Download Started: ", episode.title)
+      );
+      downloadProcessor.addTask(task);
+   },
+   oldDownloadEpisode(feed, episode, progressCallback, completeCallback) {
       let fileName = path.format({
          dir: this.getFeedPath(feed),
          name: filenamify(episode.title),
