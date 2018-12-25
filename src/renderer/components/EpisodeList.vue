@@ -15,7 +15,15 @@
                <span class="text-primary" v-if="data.item.bookmark > 0"><i class="fas fa-book"></i></span>
                <span class="text-primary" v-if="data.item.filename"><i class="fas fa-arrow-alt-circle-down"></i></span>
             </div>
-            <div v-if="isDownloading(data.item)"><b-progress :value="downloadProgress(data.item)" :max="100"></b-progress></div>
+            <div v-if="isDownloading(data.item)">
+               <b-progress :max="100">
+                  <b-progress-bar :value="downloadProgress(data.item)">
+                     <strong>{{ 
+                        (downloadProgress(data.item) === 0) ? "Waiting..." : (downloadProgress(data.item).toString() + '%')
+                     }}</strong>
+                  </b-progress-bar>
+               </b-progress>
+            </div>
          </template>
          <template slot="published" slot-scope="data">
             {{ formatDate(data.item.published) }}
@@ -26,6 +34,7 @@
          <template slot="action" slot-scope="data">
             <button type="button" v-b-tooltip.hover title="Play Podcast" class="btn btn-success btn-sm" v-on:click="playepisode(data.item)"><i class="fas fa-play"></i></button>
             <button v-if="data.item.filename" v-b-tooltip.hover title="Delete Download" type="button" class="btn btn-danger btn-sm" @click="deleteDownload(data.item)"><i class="fas fa-file-excel"></i></button>
+            <button v-else-if="isDownloading(data.item)" class="btn btn-secondary btn-sm" disabled><i class="fas fa-download"></i></button>
             <button v-else type="button" v-b-tooltip.hover title="Download" class="btn btn-primary btn-sm" v-on:click="download(data.item)"><i class="fas fa-download"></i></button>
          </template>
 
@@ -94,5 +103,9 @@
    height: 800px;
    overflow-x: hidden;
    overflow-y: auto;
+}
+
+.progress {
+   background-color: #b9bcbf;
 }
 </style>
