@@ -29,9 +29,5 @@ export default {
    },
    mimeToExt(mime) {
       return _audioMimeMapper[mime.toLowerCase()];
-   },
-   // For development purposes.
-   sleep(time) {
-      return new Promise((resolve) => setTimeout(resolve, time));
-   }   
+   }
 };
