@@ -24,10 +24,11 @@ install:
   - node --version
 
 build_script:
+  - yarn test
   - yarn build
 
 artifacts:
   - path: build/*
     name: PodpupWin
 
-test: off
+# test: off
