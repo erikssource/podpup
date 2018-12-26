@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/rdeyj0awt2np3btq?svg=true)](https://ci.appveyor.com/project/erikssource/podpup)
+[![Travis Build Status](https://travis-ci.org/erikssource/podpup.svg?branch=master)](https://travis-ci.org/erikssource/podpup) [![Build status](https://ci.appveyor.com/api/projects/status/rdeyj0awt2np3btq?svg=true)](https://ci.appveyor.com/project/erikssource/podpup)
 
 # podpup
 
@@ -48,7 +48,7 @@ The next few feature goals are:
 * ~~Icons to show episodes that have been bookmarked or downloaded~~
 * ~~Tooltips~~
 * Support for background jobs. (in progress)
-* Limit concurrent downloads. (in progress)
+* ~~Limit concurrent downloads.~~
 * Fixed position for player in UI (don't let it scroll offscreen)
 * Add setting for feed checking interval
 * Add setting for downloading strategy
