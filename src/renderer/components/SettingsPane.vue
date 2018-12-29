@@ -2,13 +2,13 @@
    <div class="p-10">
       <div v-if="currentPodcast" >
          <p class="lead">Settings for {{ currentPodcast.title }}</p>
-         <b-button :variant="'danger'" @click="removePodcast(currentPodcast)">Unsubscribe</b-button>
+         <b-btn variant="danger" size="sm" @click="removePodcast(currentPodcast)">Unsubscribe</b-btn>
          <b-card class="mt-1">
             <b-card-header>
                Podcast Episodes
             </b-card-header>
             <b-card-body>
-               <b-btn variant="primary" @click="unhideEpisodes(currentPodcast)">Unhide All Episodes</b-btn>
+               <b-btn variant="primary" size="sm" @click="unhideEpisodes(currentPodcast)">Unhide All Episodes</b-btn>
             </b-card-body>
          </b-card>
       </div>

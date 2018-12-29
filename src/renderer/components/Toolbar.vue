@@ -2,7 +2,7 @@
    <div>
       <b-button-toolbar class="my-1" aria-label="Toolbar with buttons">
          <b-button-group class="mx-1" size="sm">
-            <b-btn v-b-tooltip.hover title="Refresh All Podcasts" variant="primary"><i class="fas fa-sync"></i> Refresh All</b-btn>                  
+            <b-btn v-b-tooltip.hover title="Refresh All Podcasts" variant="primary" @click="refreshAllPodcasts"><i class="fas fa-sync"></i> Refresh All</b-btn>                  
          </b-button-group>
          <b-button-group class="mx-1" size="sm">
             <b-btn v-b-tooltip.hover title="Display Episodes" variant="primary" @click="showEpisodes"><i class="fas fa-microphone"></i> Episodes</b-btn>
@@ -14,24 +14,18 @@
 </template>
 
 <script>
+import utils from '../common/utils';
+
 export default {
    name: 'toolbar',
    methods: {
-      /*
-      test() {
-         console.log("Test Called");
-         this.$toasted.show('An Error has occurred with the RSS Feed you entered', {
-            icon : 'exclamation-circle',
-            duration: 8000,
-            action: {
-               text: 'Dismiss',
-               onClick: (e, toastObject) => {
-                  toastObject.goAway(0);
-               }
-            }
+      refreshAllPodcasts() {
+         this.$store.dispatch('updateAllPodcasts', (err) => {
+            this.$toasted.global.pp_error({
+               message: utils.errMsg(err)
+            })
          });
       },
-      */
       show() {
          this.$modal.show('add-rss');
       },

@@ -2,6 +2,7 @@ import Vue from 'vue';
 import casts from '../api/casts';
 import poddao from '../db/poddao';
 import downloader from '../../common/downloader';
+import refresher from '../../common/refresher';
 
 const state = {
    podcasts: [],
@@ -10,6 +11,7 @@ const state = {
    episode_progress: {},
    current_episodes: null,
    current_pod: null,
+   play_pod: null,
    play_episode: null,
    adding_rss_feed: false,
    searching_for_podcasts: false
@@ -39,24 +41,43 @@ const actions = {
          } 
       );
    },
-   updatePodcast({commit, state}, podcast) {
+   updateAllPodcasts({dispatch}, errorCallback) {
+      poddao.getAllPods().then((pods) => {
+         pods.forEach((pod) => {
+            dispatch('updatePodcast', {
+               podcast: pod,
+               errorCallback: errorCallback
+            });
+         });
+      })
+      .catch((err) => {
+         console.error(err);
+         errorCallback("Could not load podcasts");
+      });
+   },
+   updatePodcast({commit, state}, payload) {
+      let { podcast, errorCallback } = payload;
+
       commit('setPodStateRefreshing', podcast);
 
-      casts.updateFeed(podcast,
+      refresher.refreshPodcast(
+         podcast,
          (err) => {
             commit('setPodStateNotRefreshing', podcast);
-            throw err;
+            errorCallback(err);
          },
          (count) => {
-            if (state.current_pod && state.current_pod.id === pod.id) {
+            if (state.current_pod && state.current_pod.id === podcast.id) {
                poddao.getAllEpisodes(podcast).then((episodes) => {
+                  state.current_episodes = episodes;
                   commit('setPodStateNotRefreshing', podcast);
                });
             }
             else {
                commit('setPodStateNotRefreshing', podcast);
             }
-         });
+         }
+      );
    },
    feedAdded ({commit}, payload) {
       casts.addFeed(payload.rssfeed, 
@@ -99,13 +120,17 @@ const actions = {
             throw err;
          });
    },
-   playEpisode ({commit}, episode) {
-      commit('setPlayingEpisode', episode);
+   playEpisode ({commit, state}, episode) {
+      commit('setPlayingEpisode', {
+         podcast: state.current_pod,
+         episode: episode
+      });
    },
    updateBookmark({commit}, payload) {
       commit('updateEpisodeBookmark', {episode: payload.episode, bookmark: payload.position});
    },
-   downloadEpisode({commit, state}, episode) {
+   downloadEpisode({commit, state}, payload) {
+      let {episode, errorCallback} = payload;
       commit('setEpisodeStateDownloading', episode);
 
       downloader.downloadEpisode(
@@ -115,9 +140,8 @@ const actions = {
             commit('setEpisodeStateProgress', { episode: episode, progress: progress });
          },
          (err) => {
-            console.warn("ERROR WHILE DOWNLOADING EPISODE: ", err);
             commit('setEpisodeStateNotDownloading', episode);
-            throw err;
+            errorCallback("Error downloading episode " + episode.title);
          },
          (fileName) => {
             commit('setEpisodeStateProgress', { episode: episode, progress: 100 });
@@ -220,7 +244,9 @@ const mutations = {
          });
       }
    },
-   setPlayingEpisode(state, episode) {
+   setPlayingEpisode(state, payload) {
+      let {podcast, episode} = payload;
+      state.play_pod = podcast;
       state.play_episode = episode;
    },
    setPodStateRefreshing(state, podcast) {

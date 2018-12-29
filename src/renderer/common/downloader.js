@@ -33,7 +33,7 @@ let doDownload = function(payload) {
 };
 
 export default {
-   downloadEpisode(feed, episode, progressCallback, completeCallback) {
+   downloadEpisode(feed, episode, progressCallback, errorCallback, completeCallback) {
       let fileName = path.format({
          dir: this.getFeedPath(feed),
          name: filenamify(episode.title),
@@ -46,7 +46,9 @@ export default {
             episode: episode,
             progressCallback: progressCallback
          },
-         (err) => console.error("Download Error: ", err),
+         (err) => {
+            errorCallback(err);
+         },
          (result) => {
             console.log("Download Finished: ", result);
             completeCallback(result);

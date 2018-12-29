@@ -22,6 +22,7 @@
 
 <script>
    import { MoonLoader } from '@saeris/vue-spinners'
+   import utils from '../common/utils'
 
    export default {
       name: 'podcast-list',
@@ -47,13 +48,13 @@
             this.$store.dispatch('podSelected', row);
          },
          refreshPodcast(row) {
-            this.$data.waiting.push(row.id);
             this.$store.dispatch('updatePodcast', {
                   podcast: row,
-                  complete: function() {
-                     console.log('Complete called')
-                     this.$data.waiting.splice(this.$data.waiting.indexOf(row.id), 1)
-                  }.bind(this)
+                  errorCallback: (err) => {
+                     this.$toasted.global.pp_error({
+                        message: utils.errMsg(err)
+                     })
+                  }
                });
             return false;
          }

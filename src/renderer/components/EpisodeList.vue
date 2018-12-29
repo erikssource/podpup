@@ -57,7 +57,6 @@
 
 <script>
    import utils from '../common/utils'
-   import downloader from '../common/downloader'
 
    export default {
       name: 'episode-list',
@@ -88,7 +87,14 @@
             return !episode.hidden;
          },
          download(episode) {
-            this.$store.dispatch('downloadEpisode', episode);
+            this.$store.dispatch('downloadEpisode', {
+               episode: episode,
+               errorCallback: (err) => {
+                  this.$toasted.global.pp_error({
+                     message: utils.errMsg(err)
+                  })
+               }
+            });
          },
          playepisode(episode) {
             this.$store.dispatch('playEpisode', episode);

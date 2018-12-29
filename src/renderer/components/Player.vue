@@ -10,7 +10,8 @@
          </div>
          <div class="col">
             <p v-if="playingEpisode">
-               <span class="go-left"><strong>{{ playingEpisode.title }}</strong></span>
+               <span class="go-left"><strong>{{ playingPodcast.title }}</strong></span><br>
+               <span class="go-left">{{ playingEpisode.title }}</span>
                <span v-if="dragging" class="go-right">{{ formatDuration(calculatedSeek)}}</span>
                <span v-else class="go-right">{{ formatDuration(seek) }}</span>
             </p>
@@ -18,7 +19,7 @@
                <vue-slider ref="slider" v-bind:tooltip="false" v-model="progress" @drag-start="dragStart" @drag-end="dragEnd" :min="0" :max="2000" ></vue-slider>
             </div>
             <div v-else>
-               <span class="lead">Nothing Playing</span>
+               <span class="lead">Nothing Currently Playing</span>
             </div>
          </div>
       </div>
@@ -72,6 +73,9 @@
          });
       },
       computed: {
+         playingPodcast() {
+            return this.$store.state.podcasts.play_pod;
+         },
          playingEpisode() {
             return this.$store.state.podcasts.play_episode;
          },

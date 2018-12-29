@@ -59,7 +59,7 @@ export default {
    },
 
    updateFeed(podcast, errorCallback, completeCallback) {
-      request( url, (err, response, data) => {
+      request( podcast.url, (err, response, data) => {
          if (err) {
             console.warn("Request error during updateFeed(): ", err);
             errorCallback("Could not refresh " + podcast.title);
@@ -108,31 +108,6 @@ export default {
       .catch((err) => {
          console.warn("Error getting episode guids during syncEpisodes(): ", err);
          errorCallback("Could not retrieve existing episode data.");
-      });
-   },
-
-   oldUpdateFeed(podcast) {
-      return Promise.join(poddao.getEpisodeGuids(podcast), this.getFeed(podcast.url), (eps, feed) => {
-         let guids = [];
-         if (eps) {
-            eps.forEach((ep) => {
-               guids.push(ep.guid);
-            });
-         }
-         let tasks = [];
-         if (feed) {            
-            feed.episodes.forEach((ep) => {
-               if (!guids.includes(ep.guid)) {
-                  tasks.push(poddao.addEpisode(podcast, ep));
-               }
-            });
-         }
-         if (tasks.length > 0) {
-            return Promise.all(tasks).then(() => Promise.resolve(podcast));
-         }
-         else {
-            return Promise.resolve(podcast);
-         }
       });
    }
 };
