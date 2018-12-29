@@ -1,6 +1,4 @@
-import Vue from 'vue';
 import Sequelize from 'sequelize';
-import Promise from 'bluebird';
 import path from 'path';
 import fs from 'fs';
 
@@ -201,7 +199,8 @@ export default {
    getAllEpisodes(feed) {
       return Episode.findAll({
          where: {
-            pod_id: feed.id
+            pod_id: feed.id,
+            hidden: false
          },
          order: [['published', 'DESC']]
       })
@@ -249,10 +248,22 @@ export default {
       return podcast.update(data);
    },
    async removePodcast(pod) {
-      let podcast = await Feed.findByPk(pod.id)
-      await this.deleteEpisodes(podcast.id)
+      let podcast = await Feed.findByPk(pod.id);
+      await this.deleteEpisodes(podcast.id);
       return sequelize.query('DELETE FROM pods WHERE id=?', 
-            { replacements: [podcast.id], type: sequelize.QueryTypes.DELETE })
+            { replacements: [podcast.id], type: sequelize.QueryTypes.DELETE });
+   },
+   async removePodcastByTitle(title) {
+      try {
+         await Feed.destroy({
+            where: {
+               title: title
+            }
+         });
+      }
+      catch (err) {
+         console.error("Error Deleting Podcast by Title: ", err);
+      }
    },
    async addEpisode(podcast, ep) {
       let episode = await Episode.create({
@@ -266,7 +277,7 @@ export default {
          mimetype: ep.enclosure.type,
          url: ep.enclosure.url
       })
-      return episode
+      return episode;
    },
    async addEpisodes(feed, data) {
       data.episodes.forEach((ep) => {
@@ -274,13 +285,26 @@ export default {
       })
    },
    async updateEpisode(id, data) {
-      let ep = await Episode.findByPk(id)
-      return ep.update(data)
+      try {
+         let ep = await Episode.findByPk(id);
+         return ep.update(data);
+      }
+      catch (err) {
+         //TODO: Notify user of error. (Will require refactoring)
+         console.log("Error updating episode");
+         return;
+      }      
    },
    async deleteEpisodes(podId) {
       return sequelize.query('DELETE FROM episodes WHERE pod_id=?',
          { replacements: [podId], type: sequelize.QueryTypes.DELETE }
       )
+   },
+   unhideAllEpisodes(podcast) {
+      return Episode.update(
+         {hidden: false},
+         { where: { pod_id: podcast.id }}
+      );
    },
    getEpisodeGuids(podcast) {
       return Episode.findAll({

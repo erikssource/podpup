@@ -1,28 +1,27 @@
 <template>
-   <div>
-      <b-card>
-         <div class="row">
-            <div class="col-2">
-               <div>                  
-                  <button type="button" class="btn btn-primary" v-if="playingEpisode" v-on:click="playpause"><i class='fas' :class="playstate"></i></button>
-                  <button type="button" class="btn btn-secondary" v-else disabled><i class='fas' :class="playstate"></i></button>
-               </div>
-               <div v-if="playingEpisode">
-                  {{ formatDuration(playingEpisode.duration) }}
-               </div>
-            </div>
-            <div class="col">
-               <p v-if="playingEpisode" class="lead">
-                  {{ playingEpisode.title }}
-               </p>
-               <div v-if="playingEpisode" >
-                  <vue-slider ref="slider" v-bind:tooltip="false" v-model="progress" @drag-start="dragStart" @drag-end="dragEnd" :min="0" :max="2000" ></vue-slider>
-                  <span v-if="dragging">{{ formatDuration(calculatedSeek)}}</span>
-                  <span v-else>{{ formatDuration(seek) }}</span>
-               </div>
+   <div class="pp-player-inset">
+      <div class="row">
+         <div class="col-2">
+            <div>           
+               <span class="mr-1" v-if="playingEpisode">{{ formatDuration(playingEpisode.duration) }}</span>
+               <button type="button" class="btn btn-success" v-if="playingEpisode" v-on:click="playpause"><i class='fas' :class="playstate"></i></button>
+               <button type="button" class="btn btn-secondary" v-else disabled><i class='fas' :class="playstate"></i></button>
             </div>
          </div>
-      </b-card>
+         <div class="col">
+            <p v-if="playingEpisode">
+               <span class="go-left"><strong>{{ playingEpisode.title }}</strong></span>
+               <span v-if="dragging" class="go-right">{{ formatDuration(calculatedSeek)}}</span>
+               <span v-else class="go-right">{{ formatDuration(seek) }}</span>
+            </p>
+            <div v-if="playingEpisode" >
+               <vue-slider ref="slider" v-bind:tooltip="false" v-model="progress" @drag-start="dragStart" @drag-end="dragEnd" :min="0" :max="2000" ></vue-slider>
+            </div>
+            <div v-else>
+               <span class="lead">Nothing Playing</span>
+            </div>
+         </div>
+      </div>
    </div>
 </template>
 
@@ -174,5 +173,9 @@
    }
 </script>
 
-<style>
+<style scoped>
+   .pp-player-inset {
+      padding-top: 20px;
+      padding-right: 20px;
+   }
 </style>

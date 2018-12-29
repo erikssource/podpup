@@ -3,6 +3,7 @@
       <b-table v-if="episodes"
          :fields="fields"
          :items="episodes"
+         :filter="filterEpisode"
          striped >
          <template slot="details" slot-scope="data">
             <b-button v-b-tooltip.hover title="Show Details" size="sm" v-on:click="data.toggleDetails" >
@@ -32,16 +33,23 @@
             {{ formatDuration(data.item.duration) }}
          </template>
          <template slot="action" slot-scope="data">
-            <button type="button" v-b-tooltip.hover title="Play Podcast" class="btn btn-success btn-sm" v-on:click="playepisode(data.item)"><i class="fas fa-play"></i></button>
-            <button v-if="data.item.filename" v-b-tooltip.hover title="Delete Download" type="button" class="btn btn-danger btn-sm" @click="deleteDownload(data.item)"><i class="fas fa-file-excel"></i></button>
-            <button v-else-if="isDownloading(data.item)" class="btn btn-secondary btn-sm" disabled><i class="fas fa-download"></i></button>
-            <button v-else type="button" v-b-tooltip.hover title="Download" class="btn btn-primary btn-sm" v-on:click="download(data.item)"><i class="fas fa-download"></i></button>
+            <button type="button" v-b-tooltip.hover title="Play Podcast" class="btn btn-success btn-sm mb-1" v-on:click="playepisode(data.item)"><i class="fas fa-play"></i></button>
+            <button v-if="data.item.filename" v-b-tooltip.hover title="Delete Download" type="button" class="btn btn-danger btn-sm mb-1" @click="deleteDownload(data.item)"><i class="fas fa-file-excel"></i></button>
+            <button v-else-if="isDownloading(data.item)" class="btn btn-secondary btn-sm mb-1" disabled><i class="fas fa-download"></i></button>
+            <button v-else type="button" v-b-tooltip.hover title="Download" class="btn btn-primary btn-sm mb-1" v-on:click="download(data.item)"><i class="fas fa-download"></i></button>
          </template>
 
          <template slot="row-details" slot-scope="data">
+            <div>
+            <b-button-toolbar class="mb-1">
+               <b-button-group class="mx-1" size="sm">
+                  <b-btn v-b-tooltip.hover title="Hide this Podcast" variant="primary" @click="hideEpisode(data.item)"><i class="fas fa-eye-slash"></i> Hide</b-btn>
+               </b-button-group>
+            </b-button-toolbar>
             <b-card>
                <div v-html="renderHtml(data.item.description)"></div>
             </b-card>
+            </div>
          </template>
       </b-table>
    </div>
@@ -76,6 +84,9 @@
          }         
       },
       methods: {
+         filterEpisode(episode) {
+            return !episode.hidden;
+         },
          download(episode) {
             this.$store.dispatch('downloadEpisode', episode);
          },
@@ -93,6 +104,16 @@
          },
          deleteDownload(episode) {
             this.$store.dispatch('deleteDownload', episode);
+         },
+         hideEpisode(episode) {
+            this.$store.dispatch('hideEpisode', {
+               episode: episode,
+               errorCallback: (err) => {
+                  this.$toasted.global.pp_error({
+                     message: utils.errMsg(err)
+                  })
+               }
+            });
          }
       }
    }
