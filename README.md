@@ -25,11 +25,14 @@ npm run build
 As a project that has just started, there isn't a lot of functionality yet, but if you want to just subscribe, download, and play podcasts, then it is useable. The working features are:
 
 * Subscribe to podcast feeds using RSS address
+* Search for podcasts to add
 * Display available episodes with options to play or download
 * See episode descriptions
 * Play podcasts (via streaming or from the downloaded file)
 * Update podcasts to see new episodes
 * Drag progress slider to seek to a new playback position
+* Bookmarks last location in every episode listened to
+* Hide individual episodes
 
 ## Warning
 This project is at the very early stages, there will be bugs, error-handling is not sorted, and data created by this version will likely not migrate to future versions.
@@ -44,27 +47,27 @@ The next few feature goals are:
 * ~~Get podpup working with media keys (might already work on Windows, haven't tried it)~~
 * ~~Bookmarking (podcasts will resume at the same spot you stopped listening)~~
 * ~~Searching for feeds using iTunes~~
-* More error handling
+* More error handling (in progress)
 * ~~Icons to show episodes that have been bookmarked or downloaded~~
 * ~~Tooltips~~
 * Support for background jobs. (in progress)
 * ~~Limit concurrent downloads.~~
-* Fixed position for player in UI (don't let it scroll offscreen)
+* ~~Fixed position for player in UI (don't let it scroll offscreen)~~
 * Add setting for feed checking interval
 * Add setting for downloading strategy
-* Better UI feedback (in progress)
+* UI feedback when loading episodes from DB
 * Allow canceling of downloads
-* Allow limiting number of episodes shown
-* Allow hiding episodes
+* Allow limiting number of episodes shown (in progress)
+* ~~Allow hiding episodes~~
 * Allow detached episodes (no longer in feed, but downloaded)
 * Indicator to show a podcast has new content
-* Better looking UI
+* ~~Better looking UI~~
 * Queue podcasts to play
 * Dark theme
 * Bug fixes, bug fixes, bug fixes
 * Selection of data directory location
 * Downloaded episode naming options
-* Move search UI to more logical location
+* ~~Move search UI to more logical location~~
 * User guide
 ...and more
 
