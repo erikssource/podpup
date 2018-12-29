@@ -22,15 +22,18 @@ let doDownload = function(payload) {
          .on('error', (err) => {
             reject(err);
          })
-         .on('end', () => {
-            resolve(fileName);
+         .pipe(fs.createWriteStream(fileName))
+         .on('error', (err) => {
+            reject(err);
          })
-         .pipe(fs.createWriteStream(fileName));
+         .on('finish', () => {
+            resolve(fileName);
+         });
    });
 };
 
 export default {
-   downloadEpisode(feed, episode, progressCallback, completeCallback) {
+   downloadEpisode(feed, episode, progressCallback, errorCallback, completeCallback) {
       let fileName = path.format({
          dir: this.getFeedPath(feed),
          name: filenamify(episode.title),
@@ -43,7 +46,9 @@ export default {
             episode: episode,
             progressCallback: progressCallback
          },
-         (err) => console.error("Download Error: ", err),
+         (err) => {
+            errorCallback(err);
+         },
          (result) => {
             console.log("Download Finished: ", result);
             completeCallback(result);
@@ -51,27 +56,6 @@ export default {
          () => console.log("Download Started: ", episode.title)
       );
       downloadProcessor.addTask(task);
-   },
-   oldDownloadEpisode(feed, episode, progressCallback, completeCallback) {
-      let fileName = path.format({
-         dir: this.getFeedPath(feed),
-         name: filenamify(episode.title),
-         ext: utils.mimeToExt(episode.mimetype)
-      });
-
-      progress(request(episode.url))
-         .on('progress', (state) => {
-            progressCallback(Math.round(100 * state.percent));
-         })
-         .on('error', (err) => {
-            //TODO: Handle Failure
-            console.error('Download err', err);
-         })
-         .on('end', () => {
-            console.log('Download Finished', fileName);
-            completeCallback(fileName);
-         })
-         .pipe(fs.createWriteStream(fileName));
    },
    getFeedPath(feed) {
       let pathName = path.join(config.state.poddir, filenamify(feed.title, {replacement: '-'}));

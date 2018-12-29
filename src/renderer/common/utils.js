@@ -29,5 +29,13 @@ export default {
    },
    mimeToExt(mime) {
       return _audioMimeMapper[mime.toLowerCase()];
+   },
+   errMsg(err) {
+      if ( typeof err === 'string' ) {
+         return err;
+      }
+      else {
+         return err.message;
+      }
    }
 };

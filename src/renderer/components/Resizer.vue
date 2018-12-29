@@ -1,5 +1,5 @@
 <template>
-  <span @mouseover="isMouseOver = true" @mouseout="isMouseOver = false" class="Resizer" :style="resStyle"> </span>    
+  <span v-bind:hidden="isResizerHidden" @mouseover="isMouseOver = true" @mouseout="isMouseOver = false" class="Resizer" :style="resStyle"> </span>    
 </template>
 
 <script>
@@ -23,6 +23,9 @@ export default {
     },
   },
   computed: {
+    isResizerHidden() {
+      return !this.$store.state.controls.pane_resize_active;
+    },
     resizerTotalThickness() {
       return this.resizerThickness + this.resizerBorderThickness * 2
     },
@@ -77,7 +80,7 @@ export default {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  z-index: 10000;
+  z-index: 3;
   -moz-background-clip: padding-box;
   -webkit-background-clip: padding-box;
   background-clip: padding-box;

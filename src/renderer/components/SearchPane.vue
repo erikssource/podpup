@@ -1,15 +1,19 @@
 <template>
-   <div class="p-8">
-      <b-card>
+   <div>
+      <b-card class="m-1">
          <b-card-header>
             Add RSS Feed Directly
          </b-card-header>
          <b-card-body>
-            <p><input class="w-100" v-model='rssfeed' placeholder="URL for RSS"></p>
+
+            <div class="mb-1"> 
+               <span v-if="invalidRss" class="text-danger">Invalid URL for RSS</span>
+               <input class="w-100" v-model='rssfeed' @keyup="validateRss" placeholder="Full URL for RSS Feed">
+            </div>
             <button type="button" class="btn btn-primary" v-bind:disabled="!rssfeed" v-on:click="addFeed">Add Podcast</button>
          </b-card-body>
       </b-card>
-      <b-card>
+      <b-card class="m-1">
          <b-card-header>
             Search For Podcasts
          </b-card-header>
@@ -18,7 +22,7 @@
             <button type="button" class="btn btn-primary" v-bind:disabled="!searchterms" @click="searchForFeeds">Search</button>
          </b-card-body>
       </b-card>
-      <b-card v-if="searchresults">
+      <b-card class="m-1" v-if="searchresults">
          <b-card-header>
             Search Results
          </b-card-header>
@@ -38,24 +42,53 @@
 </template>
 
 <script>
-   export default {
+   import validator from 'validator';
+   import utils from '../common/utils';
+
+   export default {      
       name: 'search-pane',
       data() {
          return {
+            invalidRss: false,
             rssfeed: null,
             searchterms: null,
             searchresults: null
          }
       },
       methods: {
+         validateRss(event) {
+            if (this.$data.rssfeed) { 
+               this.$data.invalidRss = !validator.isURL(this.$data.rssfeed);
+               if (event.keyCode === 13) {
+                  this.addFeed();
+               }
+            }
+            else {
+               this.$data.invalidRss = false;
+            }
+         },
          addFeed() {
-            this.$store.dispatch('feedAdded', this.$data.rssfeed)
+            if (this.$data.rssfeed && !this.$data.invalidRss) {
+               this.$store.dispatch('feedAdded', {
+                  rssfeed: this.$data.rssfeed,
+                  errorCallback: (err) => {
+                     this.$toasted.global.pp_error({
+                        message: utils.errMsg(err)
+                     })
+                  }
+               });                  
+            }
          },
          subscribe(searchresult) {
             this.$store.dispatch('podAdded', {
                title: searchresult.title,
                lastupdate: searchresult.lastupdate,
-               url: searchresult.url
+               url: searchresult.url,
+               errorCallback: (err) => {
+                  this.$toasted.global.pp_error({
+                     message: utils.errMsg(err)
+                  })
+               }
             })
             let index = this.$data.searchresults.indexOf(searchresult)
             if (index >= 0) {
