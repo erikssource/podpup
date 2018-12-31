@@ -11,6 +11,7 @@ import App from './App';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { toLinuxArchString } from 'builder-util';
 
 poddao.initialize();
 
@@ -45,8 +46,14 @@ new Vue({
   components: { App },
   store,
   template: '<App/>',
+  created() {
+    this.$store.dispatch('loadConfig');
+  },
   beforeMount() {
     this.$store.dispatch('initialize');
+    this.$electron.ipcRenderer.on('before-quit', (event) => {
+      this.$store.dispatch('shutdown');
+   });
   }
 }).$mount('#app');
 

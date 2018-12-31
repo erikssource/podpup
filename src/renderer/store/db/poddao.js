@@ -4,13 +4,15 @@ import fs from 'fs';
 
 import config from '../modules/config';
 
+/*
 if (!fs.existsSync(config.state.poddir)) {
    fs.mkdirSync(config.state.poddir, {recursive: true});
 }
+*/
 
 const sequelize = new Sequelize('poddb', null, null, {
    dialect: 'sqlite',
-   storage: path.join(config.state.poddir, 'podpup.db'),
+   storage: path.join('/home/erik/podpup2', 'podpup.db'),
    logging: () => {}
 });
 

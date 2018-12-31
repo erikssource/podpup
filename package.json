@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "@saeris/vue-spinners": "^1.0.8",
+    "better-sqlite3": "^5.2.1",
     "bluebird": "^3.5.3",
     "bootstrap-vue": "^2.0.0-rc.11",
     "emotion": "9.2.6",
