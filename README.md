@@ -10,8 +10,8 @@ A loyal podcast fetcher
 # install dependencies
 npm install
 
-# rebuild sqlite3
-./node_modules/.bin/electron-rebuild -w sqlite3
+# rebuild better-sqlite3
+./node_modules/.bin/electron-rebuild -w better-sqlite3
 
 # serve with hot reload at localhost:9080
 npm run dev
@@ -65,7 +65,7 @@ The next few feature goals are:
 * Queue podcasts to play
 * Dark theme
 * Bug fixes, bug fixes, bug fixes
-* Selection of data directory location
+* Selection of data directory location (can be configured, but not in UI yet)
 * Downloaded episode naming options
 * ~~Move search UI to more logical location~~
 * User guide
