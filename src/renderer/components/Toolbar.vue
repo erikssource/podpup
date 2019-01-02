@@ -9,12 +9,21 @@
             <b-btn v-b-tooltip.hover title="Search for Podcasts" variant="primary" @click="showSearch"><i class="fas fa-search"></i> Search</b-btn>            
             <b-btn v-b-tooltip.hover title="Global Settings" variant="primary" @click="showSettings"><i class="fas fa-cog"></i> Settings</b-btn>
          </b-button-group>
+         <!--
+         <b-button-group class="mx-1" size="sm">
+            <b-btn variant="success" @click="testMethod"><i class="fas fa-flask"></i> Test</b-btn>                  
+         </b-button-group>
+         -->
       </b-button-toolbar>
    </div>
 </template>
 
 <script>
 import utils from '../common/utils';
+import config from '../store/modules/config';
+import AppProperties from '../../common/appproperties';
+
+import PodpupDao from '../store/db/podpupdao';
 
 export default {
    name: 'toolbar',
@@ -42,10 +51,15 @@ export default {
          console.log("TRYING TO SHOW ERROR FROM TOOLBAR");
          this.$modal.show('err-modal', { msg: msg });
       }
+
+/*
+      testMethod() {
+         console.log(AppProperties.getProperties().getProperty('datadir'));
+      }
+*/
    }
 }
 
 </script>
 
 <style>
-</style>
