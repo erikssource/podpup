@@ -1,4 +1,5 @@
 import { app, dialog, BrowserWindow, Menu, globalShortcut } from 'electron';
+import AppProperties from '../common/appproperties';
 import dbusMediaKeys from './linux/dbusMediaKeys';
 
 /**
@@ -87,6 +88,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('before-quit', () => {
+  mainWindow.webContents.send('before-quit');
 });
 
 app.on('activate', () => {
