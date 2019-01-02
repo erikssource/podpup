@@ -58,7 +58,7 @@ const selectPodBase = "SELECT id, title, author, url, lastupdate, image, summary
    "description, link, maxeps, checktime, autodown, maxdown, downttl, ppupdate, settings " +
    "FROM pods";
 
-const seletEpisodeBase = "SELECT id, guid, title, description, published, duration, " +
+const selectEpisodeBase = "SELECT id, guid, title, description, published, duration, " +
    "filesize, mimetype, url, filename, detached, hidden, keeper, played, bookmark, settings, pod_id " +
    "FROM episodes";
 
@@ -70,24 +70,33 @@ const selectPodByPk = selectPodBase + " WHERE id = ?";
 
 const selectPodByTitle = selectPodBase + " WHERE title = ?";
 
-const addPodcastStub = "INSERT INTO pods (title, url, lastupdate) VALUES ( ?, ?, ? )";
+const addPodcastStub = "INSERT INTO pods (title, lastupdate, url) VALUES ( ?, ?, ? )";
 
 const getPodcastStub = "SELECT id, title, url, lastupdate FROM pods WHERE title = ?";
 
 const addPodcast = "INSERT INTO pods (title, author, lastupdate, url, image, link, summary, description) " + 
    "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
 
-const updatePodcastStub = "UPDATE pods SET author = ?, lastupdate = ?, image = ?, link = ?, summary = ?, description = ? " +
-   "WHERE id = ?";
+const updatePodcastStub = "UPDATE pods SET author=?, lastupdate=?, image=?, link=?, summary=?, description=? " +
+   "WHERE id=?";
+
+//const updatePodcastStub = "UPDATE pods SET author = ?, lastupdate = ?, image = ?, link = ?, summary = ?, description = ? " +
+//   "WHERE id = ?";
 
 const updatePodcastColumn = "UPDATE pods SET %s = ? WHERE id = ?";
 
 const deletePodcast = "DELETE FROM pods WHERE id = ?";
 
+const deletePodcastByTitle = "DELETE FROM pods WHERE title = ?";
+
 const addEpisode = "INSERT INTO episodes (pod_id, guid, title, description, published, duration, filesize, " + 
    "mimetype, url) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
 const updateEpisodeColumn = "UPDATE episodes SET %s = ? WHERE id = ?";
+
+const updateEpisodeColumnForPod = "UPDATE episodes SET %s = ? WHERE pod_id = ?";
+
+const deleteEpisode = "DELETE FROM episodes WHERE id = ?";
 
 const getEpisodeGuids = "SELECT guid FROM episodes WHERE pod_id = ?";
 
@@ -122,10 +131,10 @@ export default {
       }
    },
 
-   getAllPods() {
+   async getAllPods() {
       let rows = db.prepare(selectAllPods).all();
       if (rows) {
-         pods = [];
+         let pods = [];
          rows.forEach((r) => {
             pods.push(this._rowToPod(r));
          });
@@ -136,18 +145,18 @@ export default {
       }
    },
 
-   getPodcastFromStub(podstub) {
+   async getPodcastFromStub(podstub) {
       return this._getSinglePod(selectPodByPk, podstub.id);
    },
 
-   getPodcastByTitle(title) {
+   async getPodcastByTitle(title) {
       return this._getSinglePod(selectPodByTitle, title);
    },
 
-   getAllEpisodes(podcast) {
+   async getAllEpisodes(podcast) {
       let rows = db.prepare(selectEpisodesForFeed).bind(podcast.id).all();
       if (rows) {
-         episodes = [];
+         let episodes = [];
          rows.forEach((r) => {
             episodes.push(this._rowToEpisode(r));
          });
@@ -156,27 +165,32 @@ export default {
       return [];
    },
 
-   addPodcastStub(title, lastupdate, url) {
-      db.prepare(addPodcastStub).bind(title, lastupdate, url).run();
+   async addPodcastStub(title, lastupdate, url) {
+      db.prepare(addPodcastStub).bind(title, this._chkdate(lastupdate), url).run();
       return this.getPodcastStub(title);
    },
 
-   addPodcast(data, url) {
+   async addPodcast(data, url) {
       db.prepare(addPodcast).bind(
          data.title,
          data.author,
-         data.updated,
+         this._chkdate(data.updated),
          url,
          data.image,
          data.link,
-         data.description.short,
-         data.description.long
+         this._chkstr(data.description.short),
+         this._chkstr(data.description.long)
       ).run();
 
-      return getPodcastByTitle(data.title);
+      let podcast = await this.getPodcastByTitle(data.title);
+
+      // TODO: This is not a great way of doing this. Will need to refactor to update UI sooner.
+      await this.addEpisodes(podcast.id, data.episodes);
+
+      return podcast;
    },
 
-   getPodcastStub(title) {
+   async getPodcastStub(title) {
       let row = db.prepare(getPodcastStub).bind(title).get();
       if (row) {
          return this._rowToPod(row);
@@ -184,48 +198,91 @@ export default {
       return null;
    },
 
-   loadPodcast(id, data, url) {
+   async loadPodcast(id, data, url) {
       let podcast = this._getSinglePod(selectPodByPk, id);
       if (podcast) {
          db.prepare(updatePodcastStub).bind(
             data.author,
-            data.updated,
+            this._chkdate(data.updated),
             data.image,
             data.link,
-            data.description.short,
-            data.description.long
+            this._chkstr(data.description.short),
+            this._chkstr(data.description.long),
+            id
          ).run();
          podcast.author = data.author;
-         podcast.lastupdate = data.updated;
+         podcast.lastupdate = this._chkdate(data.updated);
          podcast.image = data.image;
          podcast.link = data.link;
-         podcast.summary = data.description.short;
-         podcast.description = data.description.long;
+         podcast.summary = this._chkstr(data.description.short);
+         podcast.description = this._chkstr(data.description.long);
 
+         await this.addEpisodes(podcast.id, data.episodes);
          return podcast;
       }
       else {
-         this.addPodcast(data, url);
+         podcast = this.addPodcast(data, url);
+         await this.addEpisodes(podcast.id, data.episodes);
+         return podcast;
       }
    },
 
-   addEpisodes(pod_id, data) {
-      data.episodes.forEach((ep) => {
-         this._addEpisodeNoReturn(pod_id, ep);
-      });
+   async addEpisodes(pod_id, eps) {
+      eps.forEach((ep) => {
+         if (ep.enclosure === undefined) {
+            console.warn("PROBLEM: ", ep);
+         }
+         else {
+            this._addEpisodeNoReturn(pod_id, ep);
+         }
+      })
    },
 
-   addEpisode(pod_id, ep) {
+   async addEpisode(pod_id, ep) {
       this._addEpisodeNoReturn(pod_id, ep);
       return getEpisodeByGuid(ep.guid);
    },
 
-   getEpisodeByGuid(guid) {
+   async getEpisodeByGuid(guid) {
       let row = db.prepare(getEpisodeByGuid).bind(guid).get();
       if (row) {
          return this._rowToEpisode(row);
       }
       return null;
+   },
+
+   async getEpisodeGuids(podcast) {
+      let values = db.prepare(getEpisodeGuids).bind(podcast.id).pluck(true).all();
+      return values;
+   },
+
+   async removePodcast(podcast) {
+      db.prepare(deletePodcast).bind(podcast.id).run();
+   },
+
+   async removePodcastByTitle(title) {
+      db.prepare(deletePodcastByTitle).bind(title).run();
+   },
+
+   async removeEpisode(episode) {
+      db.prepare(deleteEpisode).bind(episode.id).run();
+   },
+
+   //TODO: There's a better solution than separate methods
+   async hideEpisode(episode) {
+      this._updateEpisodeColumn(episode.id, 'hidden', 1);
+   },
+
+   async updateEpisodeBookmark(episode, value) {
+      this._updateEpisodeColumn(episode.id, 'bookmark', value);
+   },
+
+   async updateEpisodeFile(episode, fileName) {
+      this._updateEpisodeColumn(episode.id, 'filename', fileName);
+   },
+
+   async unhideAllEpisodes(podcast) {
+      this._updateAllEpisodesForPod(podcast.id, 'hidden', 0); 
    },
 
    shutdown() {
@@ -234,13 +291,25 @@ export default {
       }
    },
 
+   _chkbool(b) {
+      return typeof b === "boolean" ? (b ? 1 : 0) : b;
+   },
+
+   _chkstr(s) {
+      return s === undefined ? "" : s;
+   },
+
+   _chkdate(d) {
+      return typeof d === "string" ? d : d.toISOString();
+   },
+
    _addEpisodeNoReturn(pod_id, ep) {
       db.prepare(addEpisode).bind(
          pod_id,
          ep.guid,
          ep.title,
-         ep.description,
-         ep.published,
+         this._chkstr(ep.description),
+         this._chkdate(ep.published),
          ep.duration,
          ep.enclosure.filesize,
          ep.enclosure.type,
@@ -262,6 +331,10 @@ export default {
 
    _updateEpisodeColumn(id, col, value) {
       db.prepare(printf(updateEpisodeColumn, col)).bind(value, id).run();
+   },
+
+   _updateAllEpisodesForPod(podId, col, value) {
+      db.prepare(printf(updateEpisodeColumnForPod, col)).bind(value, podId).run();
    },
 
    _rowToPod(row) {

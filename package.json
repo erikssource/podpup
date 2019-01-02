@@ -1,6 +1,6 @@
 {
   "name": "podpup",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Erik Larson <erik@welarson.com>",
   "description": "An electron-vue project",
   "license": "GPL-3.0",
@@ -55,14 +55,13 @@
       "icon": "build/icons/icon.ico"
     },
     "linux": {
-      "icon": "build/icons",
+      "icon": "build/icons/256x256.png",
       "category": "AudioVideo"
     }
   },
   "dependencies": {
     "@saeris/vue-spinners": "^1.0.8",
     "better-sqlite3": "^5.2.1",
-    "bluebird": "^3.5.3",
     "bootstrap-vue": "^2.0.0-rc.11",
     "emotion": "9.2.6",
     "event-stream": "3.3.4",
@@ -76,8 +75,6 @@
     "printf": "^0.5.1",
     "request": "^2.88.0",
     "request-progress": "^3.0.0",
-    "sequelize": "^4.42.0",
-    "sqlite3": "^4.0.4",
     "validator": "^10.10.0",
     "vue": "^2.5.21",
     "vue-electron": "^1.0.6",
@@ -127,7 +124,7 @@
     "vue-loader": "^15.2.4",
     "vue-style-loader": "^4.1.0",
     "vue-template-compiler": "^2.5.21",
-    "webpack": "^4.28.2",
+    "webpack": "^4.28.3",
     "webpack-cli": "^3.0.8",
     "webpack-dev-server": "^3.1.14",
     "webpack-hot-middleware": "^2.22.2",

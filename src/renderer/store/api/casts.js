@@ -1,9 +1,8 @@
 import Vue from 'vue';
 import parsePodcast from 'node-podcast-parser';
 import request from 'request';
-import Promise from 'bluebird';
 
-import poddao from '../db/poddao';
+import podpupdao from '../db/podpupdao';
 
 export default {
    addFeed(url, errorCallback, completeCallback) {
@@ -19,7 +18,7 @@ export default {
                   errorCallback("Parse error reading feed from " + url);
                }
                else {
-                  poddao.addPodcast(feed, url).then((podcast) => {
+                  podpupdao.addPodcast(feed, url).then((podcast) => {
                      completeCallback(podcast);
                   })
                   .catch((err) => { 
@@ -45,7 +44,7 @@ export default {
                   errorCallback("Parse error reading feed from " + url);
                }
                else {
-                  poddao.loadPodcast(podId, feed, url).then((podcast) => {
+                  podpupdao.loadPodcast(podId, feed, url).then((podcast) => {
                      completeCallback(podcast);
                   })
                   .catch((err) => { 
@@ -79,23 +78,19 @@ export default {
    },
 
    syncEpisodes(podcast, feed, errorCallback, completeCallback) {
-      poddao.getEpisodeGuids(podcast).then((eps) => {
-         let guids = [];
-         if (eps) {
-            eps.forEach((ep) => {
-               guids.push(ep.guid);
-            });
-         }
-         let tasks = [];
+      podpupdao.getEpisodeGuids(podcast).then((guids) => {
+         let episodes = [];
          if (feed) {            
             feed.episodes.forEach((ep) => {
                if (!guids.includes(ep.guid)) {
-                  tasks.push(poddao.addEpisode(podcast, ep));
+                  episodes.push(ep);
                }
             });
          }
-         if (tasks.length > 0) {
-            Promise.all(tasks).then(() => completeCallback(tasks.length))
+         console.log("NEW EPISODES: ", episodes.length);
+         if (episodes.length > 0) {
+            podpupdao.addEpisodes(podcast.id, episodes)
+               .then(() => completeCallback(episodes.length))
                .catch((err) => {
                   console.warn("Error adding episodes during syncEpisodes(): ", err);
                   errorCallback('Error Adding Episodes To Database');

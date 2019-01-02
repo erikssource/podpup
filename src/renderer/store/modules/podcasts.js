@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import casts from '../api/casts';
-import poddao from '../db/poddao';
+import podpupdao from '../db/podpupdao';
 import downloader from '../../common/downloader';
 import refresher from '../../common/refresher';
 
@@ -14,7 +14,8 @@ const state = {
    play_pod: null,
    play_episode: null,
    adding_rss_feed: false,
-   searching_for_podcasts: false
+   searching_for_podcasts: false,
+   loading_episodes: false
 };
 
 const getters = {
@@ -33,7 +34,7 @@ const getters = {
 
 const actions = {
    initialize ({commit}) {
-      poddao.getAllPods().then(
+      podpupdao.getAllPods().then(
          (pods) => { commit('loadPodcasts', pods); },
          (err) => {
             console.warn("Error during initialize(): ", err);
@@ -42,7 +43,7 @@ const actions = {
       );
    },
    updateAllPodcasts({dispatch}, errorCallback) {
-      poddao.getAllPods().then((pods) => {
+      podpupdao.getAllPods().then((pods) => {
          pods.forEach((pod) => {
             dispatch('updatePodcast', {
                podcast: pod,
@@ -68,7 +69,7 @@ const actions = {
          },
          (count) => {
             if (state.current_pod && state.current_pod.id === podcast.id) {
-               poddao.getAllEpisodes(podcast).then((episodes) => {
+               podpupdao.getAllEpisodes(podcast).then((episodes) => {
                   state.current_episodes = episodes;
                   commit('setPodStateNotRefreshing', podcast);
                });
@@ -89,7 +90,7 @@ const actions = {
          });
    },
    podAdded ({commit}, payload) {
-      poddao.addPodcastStub(payload.title, payload.lastupdate, payload.url)
+      podpupdao.addPodcastStub(payload.title, payload.lastupdate, payload.url)
          .then((podcast) => {
             console.log("Podcast Stub Added: ", podcast);
             commit('addPodcast', podcast);
@@ -110,12 +111,20 @@ const actions = {
    },
    podSelected ({commit}, podcast) {
       // TODO: Handling selecting nothing
-      poddao.getPodcast(podcast)
+      podpupdao.getPodcastFromStub(podcast)
          .then((pod) => {
             commit('setCurrentPod', pod);
-            commit('setEpisodes', pod.Episodes);
-         },
-         (err) => {
+            commit('setLoadingEpisodes', true);
+            podpupdao.getAllEpisodes(pod).then((episodes) => {
+               commit('setEpisodes', episodes);
+               commit('setLoadingEpisodes', false);
+            })
+            .catch((err) => {
+               console.warn("Error loading episodes: ", err);
+               commit('setLoadingEpisodes', false);
+            });
+         })
+         .catch((err) => {
             console.log("Error selecting podcast: ", err);
             throw err;
          });
@@ -155,9 +164,9 @@ const actions = {
       commit('updateEpisodeFile', { episode: episode, filename: null} );
    },
    unhideAllEpisodes({commit, state}, payload) {
-      poddao.unhideAllEpisodes(payload.podcast).then((data) => {
+      podpupdao.unhideAllEpisodes(payload.podcast).then((data) => {
          if (state.current_pod.id === payload.podcast.id) {
-            poddao.getAllEpisodes(state.current_pod).then((episodes) => {
+            podpupdao.getAllEpisodes(state.current_pod).then((episodes) => {
                commit('setEpisodes', episodes);
                payload.completeCallback();
             })
@@ -174,17 +183,18 @@ const actions = {
       });
    },
    hideEpisode({commit}, payload) {
-      poddao.updateEpisode(payload.episode.id, {hidden: true}).then((episode) => {
+      podpupdao.hideEpisode(payload.episode).then(() => {
          commit('hideEpisode', payload.episode);
       })
       .catch((err) => {
+         console.error("Hiding Error: ", err);
          payload.errorCallback("Unable to hide episode");
       });
    },
    removePodcast({commit, state}, podcast) {
-      poddao.removePodcast(podcast)
+      podpupdao.removePodcast(podcast)
          .then(
-            () => poddao.getAllPods(),
+            () => podpupdao.getAllPods(),
             (err) => {
                console.error("Error while removing podcast: ", err);
                throw err;
@@ -227,14 +237,14 @@ const mutations = {
          state.current_episodes.forEach((ep) => {
             if (payload.episode.id === ep.id) {               
                ep.bookmark = payload.bookmark;
-               poddao.updateEpisode(ep.id, {bookmark: payload.bookmark});
+               podpupdao.updateEpisodeBookmark(ep, payload.bookmark);
                return;
             }
          });
       }
    },
    updateEpisodeFile(state, payload) {
-      poddao.updateEpisode(payload.episode.id, {filename: payload.filename});
+      podpupdao.updateEpisodeFile(payload.episode, payload.filename);
       if (state.current_episodes) {
          state.current_episodes.forEach((ep) => {
             if (payload.episode.id === ep.id) {               
@@ -248,6 +258,9 @@ const mutations = {
       let {podcast, episode} = payload;
       state.play_pod = podcast;
       state.play_episode = episode;
+   },
+   setLoadingEpisodes(state, value) {
+      state.loading_episodes = value;
    },
    setPodStateRefreshing(state, podcast) {
       if (state.podcast_refresh.hasOwnProperty(podcast.id)) {
