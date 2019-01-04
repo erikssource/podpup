@@ -1,6 +1,9 @@
 Podpup Guide
 ------------
 
+[User Guide](guide)
+
+
 ### Still Pre-Alpha
 As much as I'd like to say that Podpup has reached the Alpha stage, there just aren't enough features implemented for that. If you want to play around with it or want to contribute to the probject, then it's ready to play with. However, if you are looking for new podcast fetcher to use, this project isn't there yet. I use it for all my podcast listening on my computer, but I'm willing to put up with the missing features and having to start over when a big change breaks the current database schema. 
 
@@ -12,5 +15,4 @@ Version 0.4 will see the removal of the linkedlist code and replacing it with th
 ### Installing Podpup
 If you are interested in contributing to the project and want to install Podpup to develop. Then you probably know the drill, you'll need nodejs installed and will need to clone the repository. See the repo readme for more information. If you want to use the early-days version of Podpup as a user, then you'll need to go to the releases and download the AppImage file for 64-bit Linux or the Windows installer for Windows. Making a Mac OS installer available will come at some point. This will be better covered in the user guide when it appears.
 
-### User Guide
-In the works...
+
