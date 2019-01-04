@@ -4,6 +4,8 @@
 
 A loyal podcast fetcher
 
+[See the Podpup website for usage.](https://erikssource.github.io/podpup)
+
 #### Build Setup
 
 ``` bash
